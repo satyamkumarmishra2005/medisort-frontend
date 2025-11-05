@@ -63,7 +63,7 @@ export const sendFeedbackEmail = async (feedbackData: FeedbackData): Promise<{ s
 // Alternative simple email service using a backend endpoint
 export const sendFeedbackViaBackend = async (feedbackData: FeedbackData): Promise<{ success: boolean; message?: string }> => {
   try {
-    const response = await fetch('http://localhost:8081/api/feedback/send', {
+    const response = await fetch('http://54.226.134.50:8080/api/feedback/send', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

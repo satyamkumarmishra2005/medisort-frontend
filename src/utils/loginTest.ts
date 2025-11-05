@@ -3,7 +3,7 @@ export const testLogin = async (email: string, password: string) => {
   try {
     console.log('🔍 Testing login with:', { email, password: '***' })
     
-    const response = await fetch('http://localhost:8081/api/auth/login', {
+    const response = await fetch('http://54.226.134.50:8080/api/auth/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

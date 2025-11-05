@@ -13,7 +13,7 @@ const GoogleLoginButton: React.FC<GoogleLoginButtonProps> = ({ className, disabl
   const handleGoogleLogin = () => {
     try {
       // Redirect to Spring Boot OAuth2 endpoint
-      window.location.href = 'http://localhost:8081/oauth2/authorization/google'
+      window.location.href = 'http://54.226.134.50:8080/oauth2/authorization/google'
     } catch (error) {
       addToast({
         type: 'error',

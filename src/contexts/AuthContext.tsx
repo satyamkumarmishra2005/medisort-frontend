@@ -35,7 +35,7 @@ interface AuthContextType {
 }
 
 // API Configuration
-const API_BASE_URL = 'http://localhost:8081'
+const API_BASE_URL = 'http://54.226.134.50:8080'
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
@@ -208,11 +208,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     } catch (error) {
       console.error('Login error:', error)
-      let errorMessage = 'Network error. Please check your connection and ensure the backend server is running on port 8081.'
+      let errorMessage = 'Network error. Please check your connection and ensure the backend server is running on port 8080.'
 
       // Check if it's a network error
       if (error instanceof TypeError && error.message.includes('fetch')) {
-        errorMessage = 'Cannot connect to server. Please ensure your Spring Boot backend is running on http://localhost:8081'
+        errorMessage = 'Cannot connect to server. Please ensure your Spring Boot backend is running on http://54.226.134.50:8080'
       }
 
       return { success: false, message: errorMessage }
@@ -268,11 +268,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     } catch (error) {
       console.error('Registration error:', error)
-      let errorMessage = 'Network error. Please check your connection and ensure the backend server is running on port 8081.'
+      let errorMessage = 'Network error. Please check your connection and ensure the backend server is running on port 8080.'
 
       // Check if it's a network error
       if (error instanceof TypeError && error.message.includes('fetch')) {
-        errorMessage = 'Cannot connect to server. Please ensure your Spring Boot backend is running on http://localhost:8081'
+        errorMessage = 'Cannot connect to server. Please ensure your Spring Boot backend is running on http://54.226.134.50:8080'
       }
 
       return { success: false, message: errorMessage }

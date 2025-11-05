@@ -21,17 +21,17 @@ const ContactFeedback: React.FC<ContactFeedbackProps> = ({ className = '' }) => 
     try {
       // Get authentication token
       const token = localStorage.getItem('medisort_token')
-      
+
       const headers: any = {
         'Content-Type': 'application/json',
       }
-      
+
       // Add authorization header if token exists
       if (token) {
         headers['Authorization'] = `Bearer ${token}`
       }
-      
-      const response = await fetch('http://localhost:8081/api/feedback/send', {
+
+      const response = await fetch('http://54.226.134.50:8080/api/feedback/send', {
         method: 'POST',
         headers,
         body: JSON.stringify({
@@ -48,11 +48,11 @@ const ContactFeedback: React.FC<ContactFeedbackProps> = ({ className = '' }) => 
         return { success: true, message: 'Feedback sent successfully!' }
       } else {
         console.log('❌ Backend response not OK:', response.status, response.statusText)
-        
+
         // If it's a 401 (Unauthorized), try without auth headers for public feedback
         if (response.status === 401 && token) {
           console.log('🔄 Retrying without authentication for public feedback...')
-          const publicResponse = await fetch('http://localhost:8081/api/feedback/send', {
+          const publicResponse = await fetch('http://54.226.134.50:8080/api/feedback/send', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -66,12 +66,12 @@ const ContactFeedback: React.FC<ContactFeedbackProps> = ({ className = '' }) => 
               timestamp: feedbackData.timestamp
             })
           })
-          
+
           if (publicResponse.ok) {
             return { success: true, message: 'Feedback sent successfully!' }
           }
         }
-        
+
         throw new Error(`Backend email service failed: ${response.status}`)
       }
     } catch (error) {
@@ -87,7 +87,7 @@ const ContactFeedback: React.FC<ContactFeedbackProps> = ({ className = '' }) => 
     if (!message.trim()) return
 
     setIsSubmitting(true)
-    
+
     const feedback = {
       id: Date.now().toString(),
       type: feedbackType,
@@ -95,18 +95,18 @@ const ContactFeedback: React.FC<ContactFeedbackProps> = ({ className = '' }) => 
       userEmail: user?.email || 'anonymous',
       timestamp: new Date().toISOString()
     }
-    
+
     try {
       // Store feedback locally first
       console.log('💾 Storing feedback locally...')
       const existingFeedback = JSON.parse(localStorage.getItem('user_feedback') || '[]')
       existingFeedback.push(feedback)
       localStorage.setItem('user_feedback', JSON.stringify(existingFeedback))
-      
+
       // Try to send via backend
       console.log('📧 Attempting to send feedback via backend...')
       const emailResult = await sendFeedbackDirectly(feedback)
-      
+
       if (emailResult.success) {
         console.log('✅ Feedback sent successfully via backend')
         addToast({
@@ -124,16 +124,16 @@ const ContactFeedback: React.FC<ContactFeedbackProps> = ({ className = '' }) => 
           duration: 4000
         })
       }
-      
+
       setSubmitted(true)
       setMessage('')
-      
+
       // Reset form after 4 seconds
       setTimeout(() => setSubmitted(false), 4000)
-      
+
     } catch (error) {
       console.error('❌ Error submitting feedback:', error)
-      
+
       // Still show success to user since feedback is stored locally
       addToast({
         type: 'success',
@@ -141,7 +141,7 @@ const ContactFeedback: React.FC<ContactFeedbackProps> = ({ className = '' }) => 
         description: 'Your feedback has been saved locally. Thank you!',
         duration: 4000
       })
-      
+
       setSubmitted(true)
       setMessage('')
       setTimeout(() => setSubmitted(false), 4000)
@@ -152,18 +152,18 @@ const ContactFeedback: React.FC<ContactFeedbackProps> = ({ className = '' }) => 
 
   if (submitted) {
     return (
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         className={`bg-card rounded-lg shadow-sm border p-8 ${className}`}
       >
-        <motion.div 
+        <motion.div
           className="text-center"
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.2 }}
         >
-          <motion.div 
+          <motion.div
             className="w-16 h-16 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg"
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
@@ -173,7 +173,7 @@ const ContactFeedback: React.FC<ContactFeedbackProps> = ({ className = '' }) => 
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </motion.div>
-          <motion.h3 
+          <motion.h3
             className="text-2xl font-bold text-gray-900 mb-3"
             initial={{ y: 10, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -181,7 +181,7 @@ const ContactFeedback: React.FC<ContactFeedbackProps> = ({ className = '' }) => 
           >
             Thank You! 🎉
           </motion.h3>
-          <motion.p 
+          <motion.p
             className="text-gray-700 text-lg"
             initial={{ y: 10, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -203,14 +203,14 @@ const ContactFeedback: React.FC<ContactFeedbackProps> = ({ className = '' }) => 
   }
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
       className={`bg-card rounded-lg shadow-sm border ${className}`}
     >
       <div className="p-8">
-        <motion.div 
+        <motion.div
           className="flex items-center mb-8"
           initial={{ x: -20, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
@@ -229,8 +229,8 @@ const ContactFeedback: React.FC<ContactFeedbackProps> = ({ className = '' }) => 
           </div>
         </motion.div>
 
-        <motion.form 
-          onSubmit={handleSubmit} 
+        <motion.form
+          onSubmit={handleSubmit}
           className="space-y-8"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -242,23 +242,23 @@ const ContactFeedback: React.FC<ContactFeedbackProps> = ({ className = '' }) => 
             </label>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {[
-                { 
-                  value: 'general', 
-                  label: 'General Feedback', 
+                {
+                  value: 'general',
+                  label: 'General Feedback',
                   icon: '💬',
                   description: 'Share your thoughts',
                   gradient: 'from-blue-400 to-blue-600'
                 },
-                { 
-                  value: 'bug', 
-                  label: 'Bug Report', 
+                {
+                  value: 'bug',
+                  label: 'Bug Report',
                   icon: '🐛',
                   description: 'Report an issue',
                   gradient: 'from-red-400 to-red-600'
                 },
-                { 
-                  value: 'feature', 
-                  label: 'Feature Request', 
+                {
+                  value: 'feature',
+                  label: 'Feature Request',
                   icon: '💡',
                   description: 'Suggest improvements',
                   gradient: 'from-yellow-400 to-orange-500'
@@ -268,11 +268,10 @@ const ContactFeedback: React.FC<ContactFeedbackProps> = ({ className = '' }) => 
                   key={type.value}
                   type="button"
                   onClick={() => setFeedbackType(type.value as any)}
-                  className={`relative p-4 rounded-lg border text-left transition-all duration-300 transform hover:scale-105 ${
-                    feedbackType === type.value
+                  className={`relative p-4 rounded-lg border text-left transition-all duration-300 transform hover:scale-105 ${feedbackType === type.value
                       ? 'border-primary bg-primary/5 shadow-md'
                       : 'border-border bg-card hover:border-primary/50 hover:shadow-sm'
-                  }`}
+                    }`}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.4 + index * 0.1 }}
@@ -323,11 +322,11 @@ const ContactFeedback: React.FC<ContactFeedbackProps> = ({ className = '' }) => 
                 rows={5}
                 className="w-full px-4 py-4 border border-input rounded-lg focus:ring-2 focus:ring-ring focus:border-ring resize-none transition-all duration-300 text-foreground placeholder-muted-foreground bg-background"
                 placeholder={
-                  feedbackType === 'bug' 
+                  feedbackType === 'bug'
                     ? 'Please describe the issue you encountered in detail. Include steps to reproduce if possible...'
                     : feedbackType === 'feature'
-                    ? 'Tell us about the feature you\'d like to see. How would it help you?'
-                    : 'Share your feedback, questions, or suggestions with us...'
+                      ? 'Tell us about the feature you\'d like to see. How would it help you?'
+                      : 'Share your feedback, questions, or suggestions with us...'
                 }
                 required
               />
@@ -337,7 +336,7 @@ const ContactFeedback: React.FC<ContactFeedbackProps> = ({ className = '' }) => 
             </div>
           </motion.div>
 
-          <motion.div 
+          <motion.div
             className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

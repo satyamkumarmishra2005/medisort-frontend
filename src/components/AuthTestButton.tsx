@@ -14,7 +14,7 @@ export const AuthTestButton: React.FC = () => {
       // Test 1: Check if backend is reachable
       setTestResult('Step 1: Testing backend connection...')
       try {
-        const backendResponse = await fetch('http://localhost:8081/api/auth/login', {
+        const backendResponse = await fetch('http://54.226.134.50:8080/api/auth/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: 'test', password: 'test' })

@@ -66,8 +66,8 @@ const Profile: React.FC = () => {
           try {
             // Try multiple endpoints to get complete profile data
             const endpoints = [
-              'http://localhost:8081/api/user/profile',
-              'http://localhost:8081/api/user/profile/update'
+              'http://54.226.134.50:8080/api/user/profile',
+              'http://54.226.134.50:8080/api/user/profile/update'
             ]
 
             for (const endpoint of endpoints) {

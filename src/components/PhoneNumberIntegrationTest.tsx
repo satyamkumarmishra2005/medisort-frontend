@@ -116,7 +116,7 @@ const PhoneNumberIntegrationTest: React.FC = () => {
                 <p><strong>User:</strong> {user?.email || 'Not logged in'}</p>
                 <p><strong>Phone:</strong> {user?.phone || 'Not set'}</p>
                 <p><strong>Token:</strong> {token ? '✅ Present' : '❌ Missing'}</p>
-                <p><strong>Backend:</strong> http://localhost:8081</p>
+                <p><strong>Backend:</strong> http://54.226.134.50:8080</p>
               </div>
             </div>
             

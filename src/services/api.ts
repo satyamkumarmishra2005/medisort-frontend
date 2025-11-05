@@ -1,5 +1,5 @@
 // API service for making authenticated requests
-const API_BASE_URL = 'http://localhost:8081'
+const API_BASE_URL = 'http://54.226.134.50:8080'
 
 // Interface for user profile data
 interface UserProfileData {
@@ -589,7 +589,7 @@ export class ApiService {
       
       let errorMessage = 'Network error'
       if (error instanceof TypeError && error.message.includes('fetch')) {
-        errorMessage = 'Cannot connect to server. Please ensure the backend is running on http://localhost:8081'
+        errorMessage = 'Cannot connect to server. Please ensure the backend is running on http://54.226.134.50:8080'
       } else if (error instanceof Error) {
         errorMessage = error.message
       }

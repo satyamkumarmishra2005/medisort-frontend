@@ -62,7 +62,7 @@ const PhoneNumberQuickTest: React.FC = () => {
     console.log('🧪 Testing direct API call...')
     
     try {
-      const response = await fetch('http://localhost:8081/needs-phone', {
+      const response = await fetch('http://54.226.134.50:8080/needs-phone', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,

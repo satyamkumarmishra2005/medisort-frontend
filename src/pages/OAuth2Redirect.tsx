@@ -64,7 +64,7 @@ const OAuth2Redirect: React.FC = () => {
 
 
             // REPLACE WITH this session-based profile fetch:
-            const response = await fetch('http://localhost:8081/api/user/profile-session', {
+            const response = await fetch('http://54.226.134.50:8080/api/user/profile-session', {
               method: 'GET',
               credentials: 'include',
               headers: {

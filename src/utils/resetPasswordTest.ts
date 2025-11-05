@@ -1,5 +1,5 @@
 // Test utility for debugging reset password API calls
-const API_BASE_URL = 'http://localhost:8081'
+const API_BASE_URL = 'http://54.226.134.50:8080'
 
 export const testResetPasswordEndpoints = async (token: string) => {
   console.log('🧪 Testing Reset Password Endpoints')
