@@ -97,7 +97,17 @@ export const CustomReminderNotificationTester: React.FC = () => {
     }
   }
 
-
+  const requestNotificationPermission = async () => {
+    const granted = await customReminderNotificationService.requestPermission()
+    addToast({
+      type: granted ? 'success' : 'error',
+      title: granted ? 'Permission Granted' : 'Permission Denied',
+      description: granted 
+        ? 'Browser notifications are now enabled' 
+        : 'Browser notifications are disabled',
+      duration: 3000
+    })
+  }
 
   const createTestReminder = async () => {
     try {
@@ -196,7 +206,14 @@ export const CustomReminderNotificationTester: React.FC = () => {
               Force Check
             </Button>
 
-
+            <Button
+              onClick={requestNotificationPermission}
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <Bell className="w-4 h-4" />
+              Request Permission
+            </Button>
 
             <Button
               onClick={createTestReminder}
@@ -270,7 +287,15 @@ export const CustomReminderNotificationTester: React.FC = () => {
                   {'Notification' in window ? 'Yes' : 'No'}
                 </Badge>
               </div>
-
+              <div className="flex items-center gap-2">
+                <span className="text-sm">Permission:</span>
+                <Badge variant={
+                  Notification.permission === 'granted' ? 'success' :
+                  Notification.permission === 'denied' ? 'destructive' : 'secondary'
+                }>
+                  {Notification.permission}
+                </Badge>
+              </div>
             </div>
           </div>
 
@@ -352,7 +377,8 @@ export const CustomReminderNotificationTester: React.FC = () => {
               <div>Service Running: {isServiceRunning.toString()}</div>
               <div>Today's Reminders: {todaysReminders.length}</div>
               <div>Active Reminders: {todaysReminders.filter(r => r.isActive).length}</div>
-
+              <div>Browser Support: {'Notification' in window ? 'Yes' : 'No'}</div>
+              <div>Permission: {Notification.permission}</div>
             </div>
           </div>
         </CardContent>

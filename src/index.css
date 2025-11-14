@@ -7,25 +7,25 @@
 
 @layer base {
   :root {
-    /* Light mode - Modern Vibrant Theme (Now Dark) */
-    --background: 0 0% 3%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 1%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 1%;
-    --popover-foreground: 0 0% 98%;
+    /* Light mode - Modern Vibrant Theme */
+    --background: 240 10% 96%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
     --primary: 262 83% 58%; /* Vibrant purple */
     --primary-foreground: 0 0% 100%;
-    --secondary: 0 0% 8%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 8%;
-    --muted-foreground: 0 0% 64.9%;
+    --secondary: 220 14.3% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 220 14.3% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
     --accent: 142 76% 36%; /* Emerald green */
     --accent-foreground: 0 0% 100%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-    --border: 0 0% 8%;
-    --input: 0 0% 8%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
     --ring: 262 83% 58%;
     --radius: 0.75rem;
     
@@ -45,24 +45,24 @@
 
   .dark {
     /* Dark mode - Modern Vibrant Theme */
-    --background: 0 0% 3%;
+    --background: 240 10% 8%;
     --foreground: 0 0% 98%;
-    --card: 0 0% 1%;
+    --card: 240 10% 3.9%;
     --card-foreground: 0 0% 98%;
-    --popover: 0 0% 1%;
+    --popover: 240 10% 3.9%;
     --popover-foreground: 0 0% 98%;
     --primary: 266 85% 68%; /* Brighter purple for dark mode */
     --primary-foreground: 240 5.9% 10%;
-    --secondary: 0 0% 8%;
+    --secondary: 240 3.7% 15.9%;
     --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 8%;
-    --muted-foreground: 0 0% 64.9%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
     --accent: 160 84% 39%; /* Brighter emerald for dark mode */
     --accent-foreground: 0 0% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 8%;
-    --input: 0 0% 8%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
     --ring: 266 85% 68%;
     
     /* Modern vibrant colors for dark mode */
@@ -87,22 +87,22 @@
   body {
     @apply text-foreground;
     background: linear-gradient(135deg, 
-      hsl(0 0% 5%) 0%, 
-      hsl(0 0% 3%) 25%, 
-      hsl(0 0% 1%) 50%, 
-      hsl(0 0% 3%) 75%, 
-      hsl(0 0% 5%) 100%);
+      hsl(240 15% 98%) 0%, 
+      hsl(250 20% 96%) 25%, 
+      hsl(260 25% 94%) 50%, 
+      hsl(250 20% 96%) 75%, 
+      hsl(240 15% 98%) 100%);
     background-attachment: fixed;
     min-height: 100vh;
   }
   
   .dark body {
     background: linear-gradient(135deg, 
-      hsl(0 0% 2%) 0%, 
-      hsl(0 0% 1%) 25%, 
-      hsl(0 0% 0%) 50%, 
-      hsl(0 0% 1%) 75%, 
-      hsl(0 0% 2%) 100%);
+      hsl(240 15% 8%) 0%, 
+      hsl(250 20% 6%) 25%, 
+      hsl(260 25% 4%) 50%, 
+      hsl(250 20% 6%) 75%, 
+      hsl(240 15% 8%) 100%);
     background-attachment: fixed;
     min-height: 100vh;
   }
@@ -150,9 +150,9 @@
 }
 
 .dark .glass-effect {
-  background: hsl(0 0% 5% / 0.6);
+  background: hsl(var(--background) / 0.6);
   backdrop-filter: blur(16px);
-  border: 1px solid hsl(0 0% 15% / 0.3);
+  border: 1px solid hsl(var(--border) / 0.3);
 }
 
 /* Enhanced hover effects */
@@ -265,9 +265,9 @@
 }
 
 .dark .glass-card {
-  background: hsl(0 0% 5% / 0.7);
+  background: hsl(var(--background) / 0.7);
   backdrop-filter: blur(24px) saturate(200%);
-  border: 1px solid hsl(0 0% 15% / 0.2);
+  border: 1px solid hsl(var(--border) / 0.2);
   box-shadow: 
     0 8px 32px hsl(var(--vibrant-purple) / 0.2),
     0 4px 16px hsl(var(--vibrant-cyan) / 0.15),
@@ -436,125 +436,4 @@
 
 .status-info {
   background: linear-gradient(135deg, hsl(var(--vibrant-cyan)), hsl(189 94% 53%));
-}
-
-/* Override slate colors with black in dark mode */
-.dark .bg-slate-800 {
-  background-color: rgb(0 0 0 / 0.8) !important;
-}
-
-.dark .bg-slate-700 {
-  background-color: rgb(17 24 39 / 0.8) !important;
-}
-
-.dark .bg-slate-900 {
-  background-color: rgb(0 0 0 / 0.9) !important;
-}
-
-.dark .border-slate-600 {
-  border-color: rgb(75 85 99 / 0.6) !important;
-}
-
-.dark .border-slate-700 {
-  border-color: rgb(55 65 81 / 0.7) !important;
-}
-
-.dark .text-slate-200 {
-  color: rgb(229 231 235) !important;
-}
-
-.dark .text-slate-300 {
-  color: rgb(209 213 219) !important;
-}
-
-.dark .hover\:bg-slate-700:hover {
-  background-color: rgb(17 24 39 / 0.8) !important;
-}
-
-.dark .hover\:border-slate-500:hover {
-  border-color: rgb(107 114 128 / 0.5) !important;
-}
-
-/* Force black backgrounds everywhere */
-html, body {
-  background-color: #000000 !important;
-}
-
-/* Enhanced Profile Page Animations */
-@keyframes profile-glow {
-  0%, 100% { 
-    box-shadow: 0 0 20px rgba(168, 85, 247, 0.4), 0 0 40px rgba(59, 130, 246, 0.2); 
-  }
-  50% { 
-    box-shadow: 0 0 30px rgba(168, 85, 247, 0.6), 0 0 60px rgba(59, 130, 246, 0.4); 
-  }
-}
-
-@keyframes profile-float {
-  0%, 100% { transform: translateY(0px) rotate(0deg); }
-  33% { transform: translateY(-10px) rotate(1deg); }
-  66% { transform: translateY(-5px) rotate(-1deg); }
-}
-
-@keyframes profile-shimmer {
-  0% { transform: translateX(-100%) rotate(45deg); }
-  100% { transform: translateX(300%) rotate(45deg); }
-}
-
-.profile-glow {
-  animation: profile-glow 3s ease-in-out infinite;
-}
-
-.profile-float {
-  animation: profile-float 6s ease-in-out infinite;
-}
-
-.profile-shimmer {
-  position: relative;
-  overflow: hidden;
-}
-
-.profile-shimmer::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-  animation: profile-shimmer 2s infinite;
-}
-
-/* Enhanced card hover effects */
-.profile-card {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.profile-card:hover {
-  transform: translateY(-8px) scale(1.02);
-  box-shadow: 0 25px 50px -12px rgba(168, 85, 247, 0.25);
-}
-
-.bg-gray-900 {
-  background-color: #000000 !important;
-}
-
-.bg-slate-900 {
-  background-color: #000000 !important;
-}
-
-.bg-slate-800 {
-  background-color: #000000 !important;
-}
-
-.via-slate-900 {
-  --tw-gradient-stops: var(--tw-gradient-from), #000000 var(--tw-gradient-via-position), var(--tw-gradient-to) !important;
-}
-
-.from-gray-900 {
-  --tw-gradient-from: #000000 var(--tw-gradient-from-position) !important;
-}
-
-.to-gray-800 {
-  --tw-gradient-to: #000000 var(--tw-gradient-to-position) !important;
 }

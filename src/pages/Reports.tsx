@@ -193,264 +193,148 @@ const Reports: React.FC = () => {
 
   return (
     <Layout>
-      <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="space-y-8 p-6"
-        >
-          {/* Enhanced Header */}
-          <motion.div 
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.1 }}
-            className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-800 via-purple-900 to-indigo-900 p-8 text-white shadow-2xl border border-slate-700/50"
-          >
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-indigo-600/10"></div>
-            <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-400/10 to-purple-400/10 rounded-full -translate-y-32 translate-x-32"></div>
-            <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-indigo-400/5 to-purple-400/5 rounded-full translate-y-24 -translate-x-24"></div>
-            
-            <div className="relative z-10">
-              <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
-                <div className="flex items-center gap-4">
-                  <motion.div 
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ duration: 0.5, delay: 0.3 }}
-                    className="p-3 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20"
-                  >
-                    <FileText className="w-8 h-8 text-blue-200" />
-                  </motion.div>
-                  <div>
-                    <motion.h1 
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.6, delay: 0.2 }}
-                      className="text-4xl font-bold flex items-center gap-3"
-                    >
-                      Medical Reports
-                      <motion.div
-                        animate={{ rotate: [0, 10, -10, 0] }}
-                        transition={{ duration: 2, repeat: Infinity, delay: 1 }}
-                      >
-                        📄
-                      </motion.div>
-                    </motion.h1>
-                    <motion.p 
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.6, delay: 0.3 }}
-                      className="text-slate-200 mt-2 text-lg"
-                    >
-                      Manage and view your medical documents securely
-                    </motion.p>
-                    {/* Debug info */}
-
-                  </div>
-                </div>
-                <div className="flex gap-3">
-                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                    <Button 
-                      variant="outline" 
-                      onClick={loadReports}
-                      disabled={isLoading}
-                      className="flex items-center gap-2 bg-slate-800/60 backdrop-blur-sm border-slate-600 hover:bg-slate-700 hover:border-slate-500 text-slate-200 hover:text-white transition-all duration-200"
-                    >
-                      <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-                      Refresh
-                    </Button>
-                  </motion.div>
-                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                    <Button 
-                      onClick={() => setShowUploadModal(true)}
-                      className="flex items-center gap-2 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
-                    >
-                      <Plus className="w-4 h-4" />
-                      Upload Report
-                    </Button>
-                  </motion.div>
-                </div>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="space-y-6"
+      >
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Medical Reports</h1>
+            <p className="text-muted-foreground">Manage and view your medical documents</p>
+            {/* Debug info */}
+            {user && (
+              <div className="text-xs text-muted-foreground mt-2 p-2 bg-muted/50 rounded">
+                Debug: User ID: {user.id} (type: {typeof user.id}), Email: {user.email}, Name: {user.name}
+                <br />
+                Token: {localStorage.getItem('medisort_token') ? 'Present' : 'Missing'}
               </div>
-            </div>
-          </motion.div>
+            )}
+          </div>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              onClick={loadReports}
+              disabled={isLoading}
+              className="flex items-center gap-2"
+            >
+              <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
+            <Button 
+              variant="healthcare-gradient" 
+              onClick={() => setShowUploadModal(true)}
+              className="flex items-center gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              Upload Report
+            </Button>
+          </div>
+        </div>
 
-        {/* Enhanced Stats Cards */}
-        <motion.div 
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="grid grid-cols-1 md:grid-cols-4 gap-6"
-        >
-          <motion.div whileHover={{ scale: 1.02, y: -5 }} transition={{ duration: 0.2 }}>
-            <Card className="relative overflow-hidden border border-slate-700/50 shadow-lg bg-gradient-to-br from-slate-800/80 to-slate-900/80 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 backdrop-blur-sm">
-              <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-blue-500/20 to-blue-600/20 rounded-full -translate-y-10 translate-x-10"></div>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-blue-300 mb-1">Total Reports</p>
-                    <motion.p 
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ duration: 0.5, delay: 0.4 }}
-                      className="text-3xl font-bold text-white"
-                    >
-                      {reports.length}
-                    </motion.p>
-                  </div>
-                  <motion.div
-                    animate={{ rotate: [0, 5, -5, 0] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                    className="p-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg"
-                  >
-                    <FileText className="w-6 h-6 text-white" />
-                  </motion.div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          <motion.div whileHover={{ scale: 1.02, y: -5 }} transition={{ duration: 0.2 }}>
-            <Card className="relative overflow-hidden border border-slate-700/50 shadow-lg bg-gradient-to-br from-slate-800/80 to-slate-900/80 hover:shadow-xl hover:shadow-red-500/10 transition-all duration-300 backdrop-blur-sm">
-              <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-red-500/20 to-red-600/20 rounded-full -translate-y-10 translate-x-10"></div>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-red-300 mb-1">PDF Files</p>
-                    <motion.p 
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ duration: 0.5, delay: 0.5 }}
-                      className="text-3xl font-bold text-white"
-                    >
-                      {reports.filter(r => r.fileType === 'PDF').length}
-                    </motion.p>
-                  </div>
-                  <div className="p-2 bg-gradient-to-br from-red-500 to-red-600 rounded-xl shadow-lg">
-                    <FileText className="w-6 h-6 text-white" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          <motion.div whileHover={{ scale: 1.02, y: -5 }} transition={{ duration: 0.2 }}>
-            <Card className="relative overflow-hidden border border-slate-700/50 shadow-lg bg-gradient-to-br from-slate-800/80 to-slate-900/80 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 backdrop-blur-sm">
-              <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-blue-500/20 to-blue-600/20 rounded-full -translate-y-10 translate-x-10"></div>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-blue-300 mb-1">Images</p>
-                    <motion.p 
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ duration: 0.5, delay: 0.6 }}
-                      className="text-3xl font-bold text-white"
-                    >
-                      {reports.filter(r => r.fileType === 'IMAGE').length}
-                    </motion.p>
-                  </div>
-                  <div className="p-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg">
-                    <ImageIcon className="w-6 h-6 text-white" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          <motion.div whileHover={{ scale: 1.02, y: -5 }} transition={{ duration: 0.2 }}>
-            <Card className="relative overflow-hidden border border-slate-700/50 shadow-lg bg-gradient-to-br from-slate-800/80 to-slate-900/80 hover:shadow-xl hover:shadow-purple-500/10 transition-all duration-300 backdrop-blur-sm">
-              <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-purple-500/20 to-purple-600/20 rounded-full -translate-y-10 translate-x-10"></div>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-purple-300 mb-1">This Month</p>
-                    <motion.p 
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ duration: 0.5, delay: 0.7 }}
-                      className="text-3xl font-bold text-white"
-                    >
-                      {reports.filter(r => {
-                        const reportDate = new Date(r.uploadDate)
-                        const now = new Date()
-                        return reportDate.getMonth() === now.getMonth() && 
-                               reportDate.getFullYear() === now.getFullYear()
-                      }).length}
-                    </motion.p>
-                  </div>
-                  <div className="p-2 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg">
-                    <Upload className="w-6 h-6 text-white" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        </motion.div>
-
-        {/* Enhanced Search and Filter */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-        >
-          <Card className="border border-slate-700/50 shadow-xl bg-gradient-to-br from-slate-800/80 via-slate-900/30 to-slate-800/20 overflow-hidden backdrop-blur-sm">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <Card variant="elevated">
             <CardContent className="p-6">
-              <div className="flex flex-col sm:flex-row gap-4">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
-                  <Input
-                    placeholder="Search reports..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 bg-slate-800/60 border-slate-600 text-white placeholder-slate-400 focus:border-blue-500 focus:ring-blue-500/20"
-                  />
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Total Reports</p>
+                  <p className="text-2xl font-bold text-foreground">{reports.length}</p>
                 </div>
-                <div className="flex gap-2">
-                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                    <Button
-                      variant={filterBy === 'all' ? 'default' : 'outline'}
-                      onClick={() => setFilterBy('all')}
-                      size="sm"
-                      className={filterBy === 'all' 
-                        ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg' 
-                        : 'bg-slate-800/60 border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white'
-                      }
-                    >
-                      All
-                    </Button>
-                  </motion.div>
-                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                    <Button
-                      variant={filterBy === 'PDF' ? 'default' : 'outline'}
-                      onClick={() => setFilterBy('PDF')}
-                      size="sm"
-                      className={filterBy === 'PDF' 
-                        ? 'bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg' 
-                        : 'bg-slate-800/60 border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white'
-                      }
-                    >
-                      PDF
-                    </Button>
-                  </motion.div>
-                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                    <Button
-                      variant={filterBy === 'IMAGE' ? 'default' : 'outline'}
-                      onClick={() => setFilterBy('IMAGE')}
-                      size="sm"
-                      className={filterBy === 'IMAGE' 
-                        ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg' 
-                        : 'bg-slate-800/60 border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white'
-                      }
-                    >
-                      Images
-                    </Button>
-                  </motion.div>
-                </div>
+                <FileText className="w-8 h-8 text-primary" />
               </div>
             </CardContent>
           </Card>
-        </motion.div>
+
+          <Card variant="elevated">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">PDF Files</p>
+                  <p className="text-2xl font-bold text-foreground">
+                    {reports.filter(r => r.fileType === 'PDF').length}
+                  </p>
+                </div>
+                <FileText className="w-8 h-8 text-red-500" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card variant="elevated">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Images</p>
+                  <p className="text-2xl font-bold text-foreground">
+                    {reports.filter(r => r.fileType === 'IMAGE').length}
+                  </p>
+                </div>
+                <ImageIcon className="w-8 h-8 text-blue-500" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card variant="elevated">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">This Month</p>
+                  <p className="text-2xl font-bold text-foreground">
+                    {reports.filter(r => {
+                      const reportDate = new Date(r.uploadDate)
+                      const now = new Date()
+                      return reportDate.getMonth() === now.getMonth() && 
+                             reportDate.getFullYear() === now.getFullYear()
+                    }).length}
+                  </p>
+                </div>
+                <Upload className="w-8 h-8 text-accent" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Search and Filter */}
+        <Card variant="glass">
+          <CardContent className="p-6">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                <Input
+                  placeholder="Search reports..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant={filterBy === 'all' ? 'healthcare' : 'outline'}
+                  onClick={() => setFilterBy('all')}
+                  size="sm"
+                >
+                  All
+                </Button>
+                <Button
+                  variant={filterBy === 'PDF' ? 'healthcare' : 'outline'}
+                  onClick={() => setFilterBy('PDF')}
+                  size="sm"
+                >
+                  PDF
+                </Button>
+                <Button
+                  variant={filterBy === 'IMAGE' ? 'healthcare' : 'outline'}
+                  onClick={() => setFilterBy('IMAGE')}
+                  size="sm"
+                >
+                  Images
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Error Message */}
         {error && (
@@ -461,20 +345,15 @@ const Reports: React.FC = () => {
           </Card>
         )}
 
-        {/* Enhanced Reports Table */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-        >
-          <Card className="border border-slate-700/50 shadow-xl bg-gradient-to-br from-slate-800/80 via-slate-900/30 to-slate-800/20 overflow-hidden backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="text-white text-xl">Reports List</CardTitle>
-              <CardDescription className="text-slate-400">
-                {isLoading ? 'Loading reports...' : `${filteredReports.length} report${filteredReports.length !== 1 ? 's' : ''} found`}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
+        {/* Reports Table */}
+        <Card variant="elevated">
+          <CardHeader>
+            <CardTitle>Reports List</CardTitle>
+            <CardDescription>
+              {isLoading ? 'Loading reports...' : `${filteredReports.length} report${filteredReports.length !== 1 ? 's' : ''} found`}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
             {isLoading ? (
               <div className="flex items-center justify-center py-8">
                 <RefreshCw className="w-6 h-6 animate-spin text-muted-foreground" />
@@ -553,9 +432,8 @@ const Reports: React.FC = () => {
                 </TableBody>
               </Table>
             )}
-            </CardContent>
-          </Card>
-        </motion.div>
+          </CardContent>
+        </Card>
 
         {/* Upload Modal */}
         <Modal isOpen={showUploadModal} onClose={() => setShowUploadModal(false)}>
@@ -564,8 +442,7 @@ const Reports: React.FC = () => {
             onClose={() => setShowUploadModal(false)}
           />
         </Modal>
-        </motion.div>
-      </div>
+      </motion.div>
     </Layout>
   )
 }

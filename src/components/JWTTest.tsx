@@ -194,7 +194,7 @@ const JWTTest: React.FC = () => {
         <div className="p-3 bg-muted/30 rounded-md">
           <h4 className="text-xs font-medium mb-2">Manual Testing with curl/Postman:</h4>
           <div className="text-xs text-muted-foreground space-y-1">
-            <p><strong>Endpoint:</strong> GET http://54.226.134.50:8080/all</p>
+            <p><strong>Endpoint:</strong> GET https://api.medisort.app/all</p>
             <p><strong>Header:</strong> Authorization: Bearer {token ? '[copied token]' : '[login first]'}</p>
             <p><strong>Expected:</strong> JSON array of users</p>
           </div>

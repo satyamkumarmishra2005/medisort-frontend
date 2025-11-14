@@ -5,9 +5,8 @@ import { Mail, Heart, ArrowLeft, CheckCircle } from 'lucide-react'
 import { Button } from '../components/ui/button'
 import { Input } from '../components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card'
-
+import { ThemeToggle } from '../components/ui/theme-toggle'
 import { useAuth } from '../contexts/AuthContext'
-import { useToast } from '../components/ui/toast'
 
 const ForgotPassword: React.FC = () => {
   const [email, setEmail] = useState('')
@@ -16,7 +15,6 @@ const ForgotPassword: React.FC = () => {
   const [isSuccess, setIsSuccess] = useState(false)
   
   const { forgotPassword } = useAuth()
-  const { addToast } = useToast()
 
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {}
@@ -41,29 +39,11 @@ const ForgotPassword: React.FC = () => {
       const success = await forgotPassword(email)
       if (success) {
         setIsSuccess(true)
-        addToast({
-          type: 'success',
-          title: 'Email Sent Successfully!',
-          description: `Password reset link has been sent to ${email}`,
-          duration: 5000
-        })
       } else {
         setErrors({ general: 'Failed to send reset email. Please try again.' })
-        addToast({
-          type: 'error',
-          title: 'Failed to Send Email',
-          description: 'Could not send password reset email. Please try again.',
-          duration: 5000
-        })
       }
     } catch (error) {
       setErrors({ general: 'An error occurred. Please try again.' })
-      addToast({
-        type: 'error',
-        title: 'Error Occurred',
-        description: 'An unexpected error occurred. Please try again.',
-        duration: 5000
-      })
     } finally {
       setIsSubmitting(false)
     }
@@ -72,7 +52,10 @@ const ForgotPassword: React.FC = () => {
   if (isSuccess) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center p-4">
-
+        {/* Theme Toggle */}
+        <div className="absolute top-4 right-4">
+          <ThemeToggle />
+        </div>
         
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -106,10 +89,10 @@ const ForgotPassword: React.FC = () => {
                   <CheckCircle className="w-8 h-8 text-accent" />
                 </div>
                 <h2 className="text-2xl font-semibold text-foreground mb-2">
-                  Email Sent Successfully! 📧
+                  Check Your Email
                 </h2>
                 <p className="text-muted-foreground mb-6">
-                  We've sent a password reset link to <strong>{email}</strong>. Click the link in your email to reset your password.
+                  If an account exists with that email address, you'll receive a password reset link at <strong>{email}</strong>
                 </p>
                 <p className="text-sm text-muted-foreground mb-6">
                   If you don't see the email, check your spam folder. The link will expire in 24 hours.
@@ -138,7 +121,10 @@ const ForgotPassword: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center p-4">
-
+      {/* Theme Toggle */}
+      <div className="absolute top-4 right-4">
+        <ThemeToggle />
+      </div>
       
       <motion.div
         initial={{ opacity: 0, y: 20 }}

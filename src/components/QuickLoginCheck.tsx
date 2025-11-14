@@ -25,7 +25,7 @@ export const QuickLoginCheck: React.FC = () => {
       }
 
       // Test a simple API call
-      const response = await fetch('http://54.226.134.50:8080/api/medicines/user/all', {
+      const response = await fetch('https://api.medisort.app/api/medicines/user/all', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'

@@ -6,8 +6,7 @@ import { Button } from '../components/ui/button'
 import { Input } from '../components/ui/input'
 import { useToast } from '../components/ui/toast'
 import ApiService from '../services/api'
-import { customReminderNotificationService } from '../services/customReminderNotificationService'
-
+import CustomReminderNotificationTester from '../components/CustomReminderNotificationTester'
 
 interface CustomReminder {
   id?: number
@@ -33,7 +32,7 @@ const CustomReminders: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [isCreating, setIsCreating] = useState(false)
   const [showCreateForm, setShowCreateForm] = useState(false)
-
+  const [showDebugPanel, setShowDebugPanel] = useState(false)
   const [newReminder, setNewReminder] = useState({
     title: '',
     time: '09:00',
@@ -406,43 +405,13 @@ const CustomReminders: React.FC = () => {
               
               <div className="flex gap-3">
                 <Button
-                  onClick={() => {
-                    // Test notification immediately
-                    const testNotification = {
-                      id: Date.now(),
-                      title: 'Test Notification',
-                      time: new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' }),
-                      category: 'health',
-                      notes: 'This is a test notification',
-                      reminder: {
-                        id: Date.now(),
-                        title: 'Test Notification',
-                        time: new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' }),
-                        frequency: 'daily',
-                        isActive: true,
-                        type: 'custom' as const,
-                        label: 'health'
-                      }
-                    }
-                    
-                    const event = new CustomEvent('custom-reminder-notification', {
-                      detail: testNotification
-                    })
-                    window.dispatchEvent(event)
-                    
-                    addToast({
-                      type: 'success',
-                      title: 'Test Notification Sent',
-                      description: 'Check the top-right corner for the notification',
-                      duration: 3000
-                    })
-                  }}
+                  onClick={() => setShowDebugPanel(!showDebugPanel)}
                   variant="outline"
                   size="sm"
-                  className="flex items-center gap-2 text-blue-600 hover:text-blue-700"
+                  className="flex items-center gap-2"
                 >
-                  <Bell className="w-4 h-4" />
-                  Test
+                  <Settings className="w-4 h-4" />
+                  {showDebugPanel ? 'Hide' : 'Show'} Debug
                 </Button>
                 
                 <Button
@@ -453,34 +422,6 @@ const CustomReminders: React.FC = () => {
                 >
                   <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
                   Refresh
-                </Button>
-                
-                <Button
-                  onClick={() => {
-                    const status = customReminderNotificationService.getStatus()
-                    if (!status.isRunning) {
-                      customReminderNotificationService.start()
-                      addToast({
-                        type: 'success',
-                        title: 'Service Started',
-                        description: 'Notification service is now running',
-                        duration: 3000
-                      })
-                    } else {
-                      addToast({
-                        type: 'info',
-                        title: 'Service Running',
-                        description: 'Notification service is already active',
-                        duration: 3000
-                      })
-                    }
-                  }}
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center gap-2 text-green-600 hover:text-green-700"
-                >
-                  <Settings className="w-4 h-4" />
-                  Service
                 </Button>
                 
                 <Button
@@ -495,7 +436,17 @@ const CustomReminders: React.FC = () => {
             </div>
           </motion.div>
 
-
+          {/* Debug Panel */}
+          {showDebugPanel && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="overflow-hidden"
+            >
+              <CustomReminderNotificationTester />
+            </motion.div>
+          )}
 
           {/* Enhanced Create Form */}
           {showCreateForm && (

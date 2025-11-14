@@ -38,7 +38,7 @@ export interface CustomReminderStats {
   upcomingReminders: number
 }
 
-const API_BASE_URL = 'http://54.226.134.50:8080'
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://api.medisort.app'
 const STORAGE_KEY = 'custom_reminders_cache' // For offline caching
 
 // Create axios instance with default config

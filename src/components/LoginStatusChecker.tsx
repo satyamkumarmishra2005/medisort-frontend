@@ -55,7 +55,7 @@ export const LoginStatusChecker: React.FC = () => {
 
   const testBackendConnection = async () => {
     try {
-      const response = await fetch('http://54.226.134.50:8080/api/medicines/user/all', {
+      const response = await fetch('https://api.medisort.app/api/medicines/user/all', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'

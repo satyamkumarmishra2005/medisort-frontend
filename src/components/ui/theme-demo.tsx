@@ -2,7 +2,7 @@ import React from 'react'
 import { Button } from './button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './card'
 import { Input } from './input'
-
+import { ThemeToggle } from './theme-toggle'
 import { Heart, Shield, Activity } from 'lucide-react'
 
 export const ThemeDemo: React.FC = () => {
@@ -10,6 +10,7 @@ export const ThemeDemo: React.FC = () => {
     <div className="p-8 space-y-8">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-foreground">Theme Demo</h1>
+        <ThemeToggle />
       </div>
 
       {/* Button Variants */}

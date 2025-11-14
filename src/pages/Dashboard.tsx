@@ -7,11 +7,10 @@ import { Layout } from '../components/ui/layout'
 import { useToast } from '../components/ui/toast'
 import { useAuth } from '../contexts/AuthContext'
 import { useNavigate } from 'react-router-dom'
-
+import { NotificationPermissionBanner } from '../components/NotificationPermissionBanner'
 
 import { MedicineDashboard } from '../components/MedicineDashboard'
 import { RefillAlertsDashboard } from '../components/RefillAlertsDashboard'
-
 import { medicineApi, MedicineStats } from '../services/medicineApi'
 
 const Dashboard: React.FC = () => {
@@ -31,8 +30,9 @@ const Dashboard: React.FC = () => {
         const stats = await medicineApi.getMedicineStats()
         setMedicineStats(stats)
         
-        // Always treat users as returning users - no onboarding process
-        setIsNewUser(false)
+        // Determine if user is new (no medicines added)
+        const isUserNew = stats.totalMedicines === 0
+        setIsNewUser(isUserNew)
         
         // Calculate profile completion
         let completion = 0
@@ -66,17 +66,19 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     const hasShownWelcome = sessionStorage.getItem('welcomeToastShown')
     if (!hasShownWelcome && user) {
-      const welcomeMessage = `Welcome to MediSort, ${user.name || 'User'}! Your healthcare management system is ready.`
+      const welcomeMessage = isNewUser 
+        ? 'Welcome to MediSort! Let\'s get started with your healthcare management journey.'
+        : `Welcome back, ${user.name || 'User'}! Your healthcare data is ready.`
       
       addToast({
         type: 'success',
-        title: 'Welcome to MediSort!',
+        title: isNewUser ? 'Welcome to MediSort!' : 'Welcome Back!',
         description: welcomeMessage,
         duration: 4000
       })
       sessionStorage.setItem('welcomeToastShown', 'true')
     }
-  }, [user, addToast])
+  }, [user, addToast, isNewUser])
 
   // Navigation handlers
   const handleAddMedicine = () => navigate('/medicines/add')
@@ -100,54 +102,11 @@ const Dashboard: React.FC = () => {
 
   const renderReturningUserDashboard = () => (
     <div className="space-y-8">
-      {/* Enhanced Welcome Section */}
-      <motion.div 
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.7, delay: 0.1 }}
-        className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-black via-purple-900 to-black p-8 text-white shadow-2xl border border-gray-700/50 mb-8"
-      >
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-indigo-600/10"></div>
-        <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-400/10 to-purple-400/10 rounded-full -translate-y-32 translate-x-32"></div>
-        <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-indigo-400/5 to-purple-400/5 rounded-full translate-y-24 -translate-x-24"></div>
-        
-        <div className="relative z-10">
-          <div className="flex items-center gap-4 mb-4">
-            <motion.div 
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-              className="p-3 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20"
-            >
-              <Activity className="w-8 h-8 text-blue-200" />
-            </motion.div>
-            <div>
-              <motion.h2 
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-                className="text-4xl font-bold flex items-center gap-3"
-              >
-                Dashboard
-                <motion.div
-                  animate={{ rotate: [0, 10, -10, 0] }}
-                  transition={{ duration: 2, repeat: Infinity, delay: 1 }}
-                >
-                  ✨
-                </motion.div>
-              </motion.h2>
-              <motion.p 
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6, delay: 0.3 }}
-                className="text-slate-200 mt-2 text-lg"
-              >
-                Welcome back, {user?.name || 'User'}! Here's your healthcare overview.
-              </motion.p>
-            </div>
-          </div>
-        </div>
-      </motion.div>
+      {/* Welcome Section */}
+      <div className="mb-8">
+        <h2 className="text-3xl font-bold text-foreground mb-2">Dashboard</h2>
+        <p className="text-muted-foreground">Welcome back, {user?.name || 'User'}! Here's your healthcare overview.</p>
+      </div>
 
       {/* Medicine Dashboard Integration */}
       <MedicineDashboard 
@@ -157,69 +116,43 @@ const Dashboard: React.FC = () => {
         onViewCustomReminders={handleViewCustomReminders}
       />
 
-      {/* Enhanced Medical Reports Section */}
+      {/* Medical Reports Section */}
       <motion.div
-        initial={{ opacity: 0, y: 30 }}
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
       >
-        <Card className="border border-gray-700/50 shadow-xl bg-gradient-to-br from-black/80 via-gray-900/30 to-black/20 overflow-hidden backdrop-blur-sm p-6">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-violet-500/10 to-teal-500/10 rounded-full -translate-y-16 translate-x-16"></div>
-          <div className="relative">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <motion.h2 
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  className="text-2xl font-bold text-white flex items-center gap-3"
-                >
-                  <motion.div
-                    animate={{ rotate: [0, 5, -5, 0] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                    className="p-2 bg-gradient-to-br from-violet-500 to-teal-600 rounded-xl shadow-lg"
-                  >
-                    <FileText className="w-6 h-6 text-white" />
-                  </motion.div>
-                  Medical Reports
-                </motion.h2>
-                <motion.p 
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.1 }}
-                  className="text-slate-400 mt-1"
-                >
-                  Upload and manage your medical documents securely
-                </motion.p>
+        <Card className="p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
+                <FileText className="w-5 h-5" />
+                Medical Reports
+              </h2>
+              <p className="text-muted-foreground text-sm">
+                Upload and manage your medical documents securely
+              </p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg cursor-pointer hover:bg-muted/70 transition-colors" onClick={handleUploadDocument}>
+              <div className="flex-shrink-0 w-10 h-10 bg-violet-100 rounded-lg flex items-center justify-center">
+                <Upload className="w-5 h-5 text-violet-600" />
+              </div>
+              <div className="text-left">
+                <div className="font-medium text-foreground">Upload Reports</div>
+                <div className="text-sm text-muted-foreground">Add new medical documents</div>
               </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <motion.div 
-                whileHover={{ scale: 1.02, y: -2 }}
-                className="flex items-center gap-4 p-4 bg-gradient-to-r from-black/60 to-gray-900/60 rounded-xl cursor-pointer transition-all duration-300 hover:shadow-lg hover:shadow-violet-500/10 border border-gray-600/50 hover:border-violet-500/50 backdrop-blur-sm" 
-                onClick={handleUploadDocument}
-              >
-                <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-violet-500 to-violet-600 rounded-xl flex items-center justify-center shadow-lg">
-                  <Upload className="w-6 h-6 text-white" />
-                </div>
-                <div className="text-left">
-                  <div className="font-semibold text-white">Upload Reports</div>
-                  <div className="text-sm text-slate-300">Add new medical documents</div>
-                </div>
-              </motion.div>
-              
-              <motion.div 
-                whileHover={{ scale: 1.02, y: -2 }}
-                className="flex items-center gap-4 p-4 bg-gradient-to-r from-black/60 to-gray-900/60 rounded-xl cursor-pointer transition-all duration-300 hover:shadow-lg hover:shadow-teal-500/10 border border-gray-600/50 hover:border-teal-500/50 backdrop-blur-sm" 
-                onClick={handleViewReports}
-              >
-                <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-teal-500 to-teal-600 rounded-xl flex items-center justify-center shadow-lg">
-                  <FileText className="w-6 h-6 text-white" />
-                </div>
-                <div className="text-left">
-                  <div className="font-semibold text-white">View All Reports</div>
-                  <div className="text-sm text-slate-300">Manage your documents</div>
-                </div>
-              </motion.div>
+            
+            <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg cursor-pointer hover:bg-muted/70 transition-colors" onClick={handleViewReports}>
+              <div className="flex-shrink-0 w-10 h-10 bg-teal-100 rounded-lg flex items-center justify-center">
+                <FileText className="w-5 h-5 text-teal-600" />
+              </div>
+              <div className="text-left">
+                <div className="font-medium text-foreground">View All Reports</div>
+                <div className="text-sm text-muted-foreground">Manage your documents</div>
+              </div>
             </div>
           </div>
         </Card>
@@ -233,9 +166,6 @@ const Dashboard: React.FC = () => {
       >
         <RefillAlertsDashboard />
       </motion.div>
-
-      {/* Notification Cleaner - Temporary Debug Tool */}
-
 
 
     </div>
@@ -672,17 +602,34 @@ const Dashboard: React.FC = () => {
 
   return (
     <Layout>
-      <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="p-6"
-        >
-          {/* Always render the normal dashboard - no onboarding process */}
-          {renderReturningUserDashboard()}
-        </motion.div>
-      </div>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        {/* Notification Permission Banner */}
+        <NotificationPermissionBanner 
+          onPermissionGranted={() => {
+            addToast({
+              type: 'success',
+              title: 'Notifications Enabled',
+              description: 'You will now receive medicine reminders.',
+              duration: 3000
+            })
+          }}
+          onPermissionDenied={() => {
+            addToast({
+              type: 'warning',
+              title: 'Notifications Disabled',
+              description: 'You can enable them later in settings.',
+              duration: 3000
+            })
+          }}
+        />
+
+        {/* Render appropriate dashboard based on user status */}
+        {isNewUser ? renderNewUserExperience() : renderReturningUserDashboard()}
+      </motion.div>
     </Layout>
   )
 }

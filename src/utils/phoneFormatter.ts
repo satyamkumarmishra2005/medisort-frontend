@@ -3,18 +3,8 @@
  */
 
 export const formatIndianPhoneNumber = (value: string): string => {
-  // Return empty string if input is empty
-  if (!value || value.trim() === '') {
-    return ''
-  }
-  
   // Remove all non-digit characters
   const cleanValue = value.replace(/\D/g, '')
-  
-  // Return empty if no digits
-  if (cleanValue.length === 0) {
-    return ''
-  }
   
   // Handle different input scenarios
   let digitsToFormat = cleanValue
@@ -38,7 +28,7 @@ export const formatIndianPhoneNumber = (value: string): string => {
   } else if (digitsToFormat.length >= 1) {
     return `+91 ${digitsToFormat}`
   } else {
-    return ''
+    return '+91 '
   }
 }
 

@@ -17,9 +17,31 @@ export const usePhoneNumberCollection = (): UsePhoneNumberCollectionReturn => {
   const { addToast } = useToast()
 
   const checkAndRedirectIfNeeded = useCallback(async (): Promise<boolean> => {
-    // No onboarding process - always return false (phone not needed)
-    return false
-  }, [])
+    setIsLoading(true)
+    
+    try {
+      const result = await ApiService.checkNeedsPhone()
+      
+      if (result.success && result.needsPhone) {
+        console.log('Phone number required, redirecting to collection page')
+        navigate('/phone-number-collection', { replace: true })
+        return true // Phone number is needed
+      }
+      
+      return false // Phone number not needed
+    } catch (error) {
+      console.error('Error checking phone number requirement:', error)
+      addToast({
+        type: 'error',
+        title: 'Error',
+        description: 'Failed to check profile requirements. Please try again.',
+        duration: 5000
+      })
+      return false
+    } finally {
+      setIsLoading(false)
+    }
+  }, [navigate, addToast])
 
   const submitPhoneNumber = useCallback(async (phoneNumber: string): Promise<boolean> => {
     setIsLoading(true)

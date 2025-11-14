@@ -1,5 +1,5 @@
 // API service for making authenticated requests
-const API_BASE_URL = 'http://54.226.134.50:8080'
+const API_BASE_URL = 'https://api.medisort.app'
 
 // Interface for user profile data
 interface UserProfileData {
@@ -202,15 +202,56 @@ export class ApiService {
     return this.makeAuthenticatedRequest<UserProfileData>('/api/user/profile', { method: 'GET' })
   }
 
-  // Check if user needs to provide phone number - disabled for no onboarding process
+  // Check if user needs to provide phone number (uses session auth, not JWT)
   static async checkNeedsPhone(): Promise<{ success: boolean; needsPhone?: boolean; message?: string }> {
-    console.log('🔍 ApiService.checkNeedsPhone() called - returning false (no onboarding)')
-    
-    // Always return that phone is not needed - no onboarding process
-    return {
-      success: true,
-      needsPhone: false,
-      message: 'Phone requirement disabled - no onboarding process'
+    console.log('🔍 ApiService.checkNeedsPhone() called')
+
+    try {
+      const url = `${API_BASE_URL}/api/user/needs-phone-session`
+
+      console.log('🌐 Making session-based API request to:', url)
+
+      const response = await fetch(url, {
+        method: 'GET',
+        credentials: 'include', // ✅ Use session cookies instead of JWT
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+
+      console.log('📡 Response status:', response.status)
+      console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()))
+
+      const isJson = response.headers.get('content-type')?.includes('application/json')
+      const data = isJson ? await response.json() : await response.text()
+
+      console.log('📦 Response data:', data)
+      console.log('📦 Is JSON:', isJson)
+
+      if (response.ok) {
+        console.log('✅ Request successful')
+        return {
+          success: true,
+          needsPhone: data.needsPhone,
+          message: 'Phone requirement check successful'
+        }
+      } else {
+        console.log('❌ Request failed with status:', response.status)
+        const errorMessage = (data && typeof data === 'object' && data.error)
+          ? data.error
+          : (typeof data === 'string' ? data : 'Request failed')
+
+        return {
+          success: false,
+          message: errorMessage
+        }
+      }
+    } catch (error) {
+      console.error('❌ API request error:', error)
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : 'Network error'
+      }
     }
   }
 
@@ -589,7 +630,7 @@ export class ApiService {
       
       let errorMessage = 'Network error'
       if (error instanceof TypeError && error.message.includes('fetch')) {
-        errorMessage = 'Cannot connect to server. Please ensure the backend is running on http://54.226.134.50:8080'
+        errorMessage = 'Cannot connect to server. Please ensure the backend is running on https://api.medisort.app'
       } else if (error instanceof Error) {
         errorMessage = error.message
       }

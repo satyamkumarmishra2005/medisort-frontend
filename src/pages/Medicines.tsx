@@ -114,9 +114,6 @@ const Medicines: React.FC = () => {
         // Update existing medicine
         await medicineApi.updateMedicine(editingMedicine.id!, medicineData)
         addToast({ title: 'Medicine updated successfully', type: 'success' })
-        
-        // Dispatch event to notify other components
-        window.dispatchEvent(new CustomEvent('medicine-updated'))
       } else {
         // Create new medicine
         const createdMedicine = await medicineApi.createMedicine(medicineData)
@@ -164,10 +161,6 @@ const Medicines: React.FC = () => {
         } else {
           addToast({ title: 'Medicine added successfully', type: 'success' })
         }
-        
-        // Dispatch event to notify other components
-        console.log('🚀 Dispatching medicine-added event')
-        window.dispatchEvent(new CustomEvent('medicine-added'))
       }
       
       navigate('/medicines')
@@ -207,36 +200,21 @@ const Medicines: React.FC = () => {
       case 'add':
       case 'edit':
         return (
-          <div className="space-y-8">
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-800 via-purple-900 to-indigo-900 p-8 text-white shadow-2xl border border-slate-700/50"
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-indigo-600/10"></div>
-              <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-400/10 to-purple-400/10 rounded-full -translate-y-32 translate-x-32"></div>
-              <div className="relative z-10">
-                <h2 className="text-3xl font-bold mb-3">
-                  {editingMedicine ? 'Edit Medicine' : 'Add New Medicine'}
-                </h2>
-                <p className="text-slate-200 text-lg">
-                  {editingMedicine ? 'Update medicine information' : 'Add a new medicine to your collection'}
-                </p>
-              </div>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-            >
-              <MedicineForm
-                medicine={editingMedicine || undefined}
-                onSubmit={handleFormSubmit}
-                onCancel={handleFormCancel}
-                isLoading={isLoading}
-              />
-            </motion.div>
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold text-foreground">
+                {editingMedicine ? 'Edit Medicine' : 'Add New Medicine'}
+              </h2>
+              <p className="text-muted-foreground">
+                {editingMedicine ? 'Update medicine information' : 'Add a new medicine to your collection'}
+              </p>
+            </div>
+            <MedicineForm
+              medicine={editingMedicine || undefined}
+              onSubmit={handleFormSubmit}
+              onCancel={handleFormCancel}
+              isLoading={isLoading}
+            />
           </div>
         )
       
@@ -269,63 +247,46 @@ const Medicines: React.FC = () => {
 
   return (
     <Layout>
-      <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="space-y-8 p-6"
-        >
-          {/* Enhanced Navigation */}
-          <motion.div 
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="flex flex-wrap gap-3 mb-8"
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="space-y-6"
+      >
+        {/* Navigation */}
+        <div className="flex flex-wrap gap-2 mb-6">
+          <button
+            onClick={() => navigate('/dashboard')}
+            className="px-4 py-2 rounded-md text-sm font-medium transition-colors bg-muted text-muted-foreground hover:bg-muted/80"
           >
-            <motion.button
-              whileHover={{ scale: 1.05, y: -2 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => navigate('/dashboard')}
-              className="px-6 py-3 rounded-xl text-sm font-medium transition-all duration-300 bg-black/60 text-gray-300 hover:bg-gray-900/80 hover:text-white border border-gray-700/50 hover:border-gray-600 backdrop-blur-sm shadow-lg hover:shadow-xl"
-            >
-              Dashboard
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.05, y: -2 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => navigate('/medicines')}
-              className={`px-6 py-3 rounded-xl text-sm font-medium transition-all duration-300 shadow-lg hover:shadow-xl ${
-                currentView === 'list'
-                  ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white border border-blue-400/50'
-                  : 'bg-black/60 text-gray-300 hover:bg-gray-900/80 hover:text-white border border-gray-700/50 hover:border-gray-600 backdrop-blur-sm'
-              }`}
-            >
-              Medicine List
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.05, y: -2 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => navigate('/medicines/reminders')}
-              className={`px-6 py-3 rounded-xl text-sm font-medium transition-all duration-300 shadow-lg hover:shadow-xl ${
-                currentView === 'reminders'
-                  ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white border border-blue-400/50'
-                  : 'bg-black/60 text-gray-300 hover:bg-gray-900/80 hover:text-white border border-gray-700/50 hover:border-gray-600 backdrop-blur-sm'
-              }`}
-            >
-              Reminders
-            </motion.button>
-          </motion.div>
+            Dashboard
+          </button>
+          <button
+            onClick={() => navigate('/medicines')}
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              currentView === 'list'
+                ? 'bg-primary text-primary-foreground'
+                : 'bg-muted text-muted-foreground hover:bg-muted/80'
+            }`}
+          >
+            Medicine List
+          </button>
+          <button
+            onClick={() => navigate('/medicines/reminders')}
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              currentView === 'reminders'
+                ? 'bg-primary text-primary-foreground'
+                : 'bg-muted text-muted-foreground hover:bg-muted/80'
+            }`}
+          >
+            Reminders
+          </button>
+        </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
-            {renderCurrentView()}
-          </motion.div>
-        </motion.div>
-      </div>
+        {renderCurrentView()}
+      </motion.div>
+      
+
     </Layout>
   )
 }

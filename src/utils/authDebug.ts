@@ -59,7 +59,7 @@ export const AuthDebugger = {
   
   async testApiEndpoint(endpoint: string, method: 'GET' | 'POST' | 'PUT' | 'DELETE' = 'GET', body?: any): Promise<void> {
     const token = localStorage.getItem('medisort_token')
-    const baseUrl = 'http://54.226.134.50:8080'
+    const baseUrl = 'https://api.medisort.app'
     
     console.log(`🧪 Testing ${method} ${endpoint}`)
     

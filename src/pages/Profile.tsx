@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { User, Phone, Calendar, Shield, Edit, Save, Camera, Mail } from 'lucide-react'
+import { User, Phone, Calendar, Shield, Edit, Save, Camera, Lock } from 'lucide-react'
 import { Layout } from '../components/ui/layout'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card'
 import { Button } from '../components/ui/button'
@@ -18,7 +18,6 @@ import {
   prepareForBackend,
   calculateAge
 } from '../utils/dateFormatter'
-import ContactFeedback from '../components/ContactFeedback'
 
 const Profile: React.FC = () => {
   const { user } = useAuth()
@@ -66,8 +65,8 @@ const Profile: React.FC = () => {
           try {
             // Try multiple endpoints to get complete profile data
             const endpoints = [
-              'http://54.226.134.50:8080/api/user/profile',
-              'http://54.226.134.50:8080/api/user/profile/update'
+              'https://api.medisort.app/api/user/profile',
+              'https://api.medisort.app/api/user/profile/update'
             ]
 
             for (const endpoint of endpoints) {
@@ -261,398 +260,279 @@ const Profile: React.FC = () => {
 
   return (
     <Layout>
-      <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="space-y-8 p-6"
-        >
-          {/* Enhanced Header */}
-          <motion.div 
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.1 }}
-            className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-slate-800 via-purple-900 to-indigo-900 p-8 text-white shadow-2xl border border-slate-700/50"
-          >
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-indigo-600/10"></div>
-            <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-400/10 to-purple-400/10 rounded-full -translate-y-32 translate-x-32"></div>
-            <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-indigo-400/5 to-purple-400/5 rounded-full translate-y-24 -translate-x-24"></div>
-            
-            <div className="relative z-10">
-              <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
-                <div className="flex items-center gap-4">
-                  <motion.div 
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ duration: 0.5, delay: 0.3 }}
-                    className="p-3 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20"
-                  >
-                    <User className="w-8 h-8 text-blue-200" />
-                  </motion.div>
-                  <div>
-                    <motion.h1 
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.6, delay: 0.2 }}
-                      className="text-4xl font-bold flex items-center gap-3"
-                    >
-                      Profile & Settings
-                      <motion.div
-                        animate={{ rotate: [0, 10, -10, 0] }}
-                        transition={{ duration: 2, repeat: Infinity, delay: 1 }}
-                      >
-                        ⚙️
-                      </motion.div>
-                    </motion.h1>
-                    <motion.p 
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.6, delay: 0.3 }}
-                      className="text-slate-200 mt-2 text-lg"
-                    >
-                      Manage your personal information and preferences
-                    </motion.p>
-                  </div>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="space-y-6"
+      >
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Profile & Settings</h1>
+            <p className="text-muted-foreground">Manage your personal information</p>
+          </div>
+          <div className="flex gap-2">
+            {isEditing ? (
+              <>
+                <Button variant="outline" onClick={handleCancel}>Cancel</Button>
+                <Button variant="healthcare-gradient" onClick={handleSave}>
+                  <Save className="w-4 h-4 mr-2" />Save Changes
+                </Button>
+              </>
+            ) : (
+              <Button variant="healthcare" onClick={() => setIsEditing(true)}>
+                <Edit className="w-4 h-4 mr-2" />Edit Profile
+              </Button>
+            )}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <Card variant="elevated" className="lg:col-span-1">
+            <CardHeader className="text-center">
+              <div className="relative mx-auto">
+                <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <User className="w-12 h-12 text-primary" />
                 </div>
-                <div className="flex gap-4">
+                {isEditing && (
+                  <Button variant="ghost" size="sm" className="absolute -bottom-2 -right-2 w-8 h-8 rounded-full bg-primary text-primary-foreground">
+                    <Camera className="w-4 h-4" />
+                  </Button>
+                )}
+              </div>
+              <CardTitle>{formData.name}</CardTitle>
+              <CardDescription>{formData.email}</CardDescription>
+              <Badge variant="success" className="mx-auto mt-2">{formData.role}</Badge>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center gap-3 text-sm">
+                <Phone className="w-4 h-4 text-muted-foreground" />
+                <span className="text-foreground">{formData.phone ? getDisplayPhoneNumber(formData.phone) : 'No phone number'}</span>
+              </div>
+              <div className="flex items-center gap-3 text-sm">
+                <Calendar className="w-4 h-4 text-muted-foreground" />
+                <span className="text-foreground">{formData.dateOfBirth ? formatToMMDDYYYY(formData.dateOfBirth) : 'Not provided'}</span>
+              </div>
+              <div className="flex items-center gap-3 text-sm">
+                <Shield className="w-4 h-4 text-muted-foreground" />
+                <span className="text-foreground">Account Verified</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card variant="glass" className="lg:col-span-2">
+            <CardHeader>
+              <CardTitle>Personal Information</CardTitle>
+              <CardDescription>{isEditing ? 'Update your personal details' : 'Your personal details'}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground">Full Name</label>
                   {isEditing ? (
-                    <>
-                      <motion.div 
-                        whileHover={{ scale: 1.05, y: -2 }} 
-                        whileTap={{ scale: 0.95 }}
-                      >
-                        <Button 
-                          variant="outline" 
-                          onClick={handleCancel}
-                          className="bg-black/60 backdrop-blur-sm border-red-500/30 hover:bg-red-500/10 hover:border-red-400 text-red-300 hover:text-red-200 transition-all duration-300 px-6 py-3 rounded-xl shadow-lg hover:shadow-red-500/20"
-                        >
-                          Cancel
-                        </Button>
-                      </motion.div>
-                      <motion.div 
-                        whileHover={{ scale: 1.05, y: -2 }} 
-                        whileTap={{ scale: 0.95 }}
-                      >
-                        <Button 
-                          onClick={handleSave}
-                          className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white shadow-xl hover:shadow-2xl hover:shadow-green-500/30 transition-all duration-300 px-6 py-3 rounded-xl border border-green-400/30"
-                        >
-                          <Save className="w-5 h-5 mr-2" />
-                          Save Changes
-                        </Button>
-                      </motion.div>
-                    </>
+                    <Input value={formData.name} onChange={(e) => handleInputChange('name', e.target.value)} />
                   ) : (
-                    <motion.div 
-                      whileHover={{ scale: 1.05, y: -2 }} 
-                      whileTap={{ scale: 0.95 }}
+                    <p className="text-foreground bg-muted/50 p-3 rounded-md">{formData.name}</p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground">Email</label>
+                  {isEditing ? (
+                    <Input type="email" value={formData.email} onChange={(e) => handleInputChange('email', e.target.value)} />
+                  ) : (
+                    <p className="text-foreground bg-muted/50 p-3 rounded-md">{formData.email}</p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground">Phone</label>
+                  {isEditing ? (
+                    <Input
+                      value={formData.phone}
+                      onChange={(e) => handleInputChange('phone', formatIndianPhoneNumber(e.target.value))}
+                      placeholder="+91 98765 43210"
+                      maxLength={17}
+                    />
+                  ) : (
+                    <p className="text-foreground bg-muted/50 p-3 rounded-md">{formData.phone ? getDisplayPhoneNumber(formData.phone) : 'No phone number'}</p>
+                  )}
+                </div>
+
+                <div className="space-y-2 relative" style={{ zIndex: isEditing ? 50 : 'auto' }}>
+                  <label className="text-sm font-medium text-foreground">Date of Birth</label>
+                  {isEditing ? (
+                    <div className="relative">
+                      <DatePicker
+                        value={formData.dateOfBirth}
+                        onChange={(date) => handleInputChange('dateOfBirth', date)}
+                        placeholder="Select your date of birth"
+                        className="w-full"
+                        maxDate={new Date().toISOString().split('T')[0]}
+                      />
+                    </div>
+                  ) : (
+                    <p className="text-foreground bg-muted/50 p-3 rounded-md">
+                      {formData.dateOfBirth ? formatToMMDDYYYY(formData.dateOfBirth) : 'Not provided'}
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground">Emergency Contact</label>
+                  {isEditing ? (
+                    <Input
+                      value={formData.emergencyContact}
+                      onChange={(e) => handleInputChange('emergencyContact', e.target.value)}
+                      placeholder="Emergency contact number"
+                    />
+                  ) : (
+                    <p className="text-foreground bg-muted/50 p-3 rounded-md">{formData.emergencyContact || 'Not provided'}</p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground">Blood Type</label>
+                  {isEditing ? (
+                    <select
+                      value={formData.bloodType}
+                      onChange={(e) => handleInputChange('bloodType', e.target.value)}
+                      className="w-full p-3 rounded-lg border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all duration-200"
                     >
-                      <Button 
-                        onClick={() => setIsEditing(true)}
-                        className="bg-gradient-to-r from-purple-500 to-blue-600 hover:from-purple-600 hover:to-blue-700 text-white shadow-xl hover:shadow-2xl hover:shadow-purple-500/30 transition-all duration-300 px-8 py-3 rounded-xl border border-purple-400/30 relative overflow-hidden group"
-                      >
-                        <div className="absolute inset-0 bg-gradient-to-r from-purple-400/20 to-blue-400/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-500"></div>
-                        <Edit className="w-5 h-5 mr-2 relative z-10" />
-                        <span className="relative z-10">Edit Profile</span>
-                      </Button>
-                    </motion.div>
+                      <option value="">Select Blood Type</option>
+                      <option value="A+">A+</option>
+                      <option value="A-">A-</option>
+                      <option value="B+">B+</option>
+                      <option value="B-">B-</option>
+                      <option value="AB+">AB+</option>
+                      <option value="AB-">AB-</option>
+                      <option value="O+">O+</option>
+                      <option value="O-">O-</option>
+                    </select>
+                  ) : (
+                    <p className="text-foreground bg-muted/50 p-3 rounded-md">{formData.bloodType || 'Not provided'}</p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground">Gender</label>
+                  {isEditing ? (
+                    <select
+                      value={formData.gender}
+                      onChange={(e) => handleInputChange('gender', e.target.value)}
+                      className="w-full p-3 rounded-lg border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all duration-200"
+                    >
+                      <option value="">Select Gender</option>
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                      <option value="Other">Other</option>
+                      <option value="Prefer not to say">Prefer not to say</option>
+                    </select>
+                  ) : (
+                    <p className="text-foreground bg-muted/50 p-3 rounded-md">{formData.gender || 'Not provided'}</p>
                   )}
                 </div>
               </div>
-            </div>
-          </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="lg:col-span-1"
-          >
-            <Card className="border border-purple-500/20 shadow-2xl bg-gradient-to-br from-black/90 via-purple-900/20 to-black/90 overflow-hidden backdrop-blur-xl relative">
-              {/* Animated background elements */}
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-purple-500/10 to-pink-500/5"></div>
-              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-400/10 to-purple-400/10 rounded-full -translate-y-16 translate-x-16 animate-pulse"></div>
-              <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-purple-400/10 to-pink-400/10 rounded-full translate-y-12 -translate-x-12 animate-pulse delay-1000"></div>
-              
-              <CardHeader className="text-center relative z-10">
-                <div className="relative mx-auto">
-                  <motion.div 
-                    whileHover={{ scale: 1.05, rotate: 5 }}
-                    className="w-28 h-28 bg-gradient-to-br from-blue-500/30 to-purple-600/30 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-purple-400/30 shadow-lg shadow-purple-500/20 relative overflow-hidden"
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-br from-blue-400/20 to-purple-600/20 animate-pulse"></div>
-                    <User className="w-14 h-14 text-purple-300 relative z-10" />
-                  </motion.div>
-                  {isEditing && (
-                    <motion.div
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      className="absolute -bottom-2 -right-2"
-                    >
-                      <Button variant="ghost" size="sm" className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 shadow-lg hover:shadow-purple-500/30 border border-purple-400/30">
-                        <Camera className="w-5 h-5" />
-                      </Button>
-                    </motion.div>
-                  )}
-                </div>
-                <CardTitle className="text-white text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">{formData.name}</CardTitle>
-                <CardDescription className="text-gray-300 text-lg">{formData.email}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4 relative z-10">
-                <motion.div 
-                  whileHover={{ x: 8, scale: 1.02 }}
-                  className="flex items-center gap-4 text-sm p-4 rounded-xl bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-400/20 hover:border-blue-400/40 transition-all duration-300 backdrop-blur-sm"
-                >
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg">
-                    <Phone className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-gray-400 text-xs uppercase tracking-wide">Phone</p>
-                    <span className="text-white font-medium">{formData.phone ? getDisplayPhoneNumber(formData.phone) : 'No phone number'}</span>
-                  </div>
-                </motion.div>
-                
-                <motion.div 
-                  whileHover={{ x: 8, scale: 1.02 }}
-                  className="flex items-center gap-4 text-sm p-4 rounded-xl bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-400/20 hover:border-purple-400/40 transition-all duration-300 backdrop-blur-sm"
-                >
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-lg">
-                    <Calendar className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-gray-400 text-xs uppercase tracking-wide">Date of Birth</p>
-                    <span className="text-white font-medium">{formData.dateOfBirth ? formatToMMDDYYYY(formData.dateOfBirth) : 'Not provided'}</span>
-                  </div>
-                </motion.div>
-                
-                <motion.div 
-                  whileHover={{ x: 8, scale: 1.02 }}
-                  className="flex items-center gap-4 text-sm p-4 rounded-xl bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-400/20 hover:border-green-400/40 transition-all duration-300 backdrop-blur-sm"
-                >
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-lg">
-                    <Shield className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-gray-400 text-xs uppercase tracking-wide">Status</p>
-                    <span className="text-white font-medium flex items-center gap-2">
-                      Account Verified
-                      <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                    </span>
-                  </div>
-                </motion.div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-            className="lg:col-span-2"
-          >
-            <Card className="border border-purple-500/20 shadow-2xl bg-gradient-to-br from-black/90 via-purple-900/20 to-black/90 overflow-hidden backdrop-blur-xl relative">
-              {/* Animated background elements */}
-              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-blue-500/10 to-pink-500/5"></div>
-              <div className="absolute top-0 left-0 w-40 h-40 bg-gradient-to-br from-purple-400/10 to-blue-400/10 rounded-full -translate-y-20 -translate-x-20 animate-pulse delay-500"></div>
-              
-              <CardHeader className="relative z-10">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="text-white text-2xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">Personal Information</CardTitle>
-                    <CardDescription className="text-gray-300 text-lg">{isEditing ? 'Update your personal details' : 'Your personal details'}</CardDescription>
-                  </div>
-                  <motion.div
-                    whileHover={{ rotate: 180 }}
-                    transition={{ duration: 0.3 }}
-                    className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center border border-purple-400/30"
-                  >
-                    <User className="w-6 h-6 text-purple-400" />
-                  </motion.div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-8 relative z-10">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <motion.div 
-                    whileHover={{ scale: 1.02, y: -2 }}
-                    className="space-y-3 group"
-                  >
-                    <label className="text-sm font-semibold text-purple-300 uppercase tracking-wide flex items-center gap-2">
-                      <User className="w-4 h-4" />
-                      Full Name
-                    </label>
-                    {isEditing ? (
-                      <Input 
-                        value={formData.name} 
-                        onChange={(e) => handleInputChange('name', e.target.value)} 
-                        className="bg-black/60 border-purple-500/30 text-white placeholder-gray-400 focus:border-purple-400 focus:ring-purple-400/20 h-12 rounded-xl backdrop-blur-sm transition-all duration-300 hover:border-purple-400/50"
-                      />
-                    ) : (
-                      <div className="text-white bg-gradient-to-r from-purple-500/10 to-blue-500/10 p-4 rounded-xl border border-purple-400/20 backdrop-blur-sm group-hover:border-purple-400/40 transition-all duration-300">
-                        {formData.name}
-                      </div>
-                    )}
-                  </motion.div>
-
-                  <motion.div 
-                    whileHover={{ scale: 1.02, y: -2 }}
-                    className="space-y-3 group"
-                  >
-                    <label className="text-sm font-semibold text-blue-300 uppercase tracking-wide flex items-center gap-2">
-                      <Mail className="w-4 h-4" />
-                      Email
-                    </label>
-                    {isEditing ? (
-                      <Input 
-                        type="email" 
-                        value={formData.email} 
-                        onChange={(e) => handleInputChange('email', e.target.value)} 
-                        className="bg-black/60 border-blue-500/30 text-white placeholder-gray-400 focus:border-blue-400 focus:ring-blue-400/20 h-12 rounded-xl backdrop-blur-sm transition-all duration-300 hover:border-blue-400/50"
-                      />
-                    ) : (
-                      <div className="text-white bg-gradient-to-r from-blue-500/10 to-purple-500/10 p-4 rounded-xl border border-blue-400/20 backdrop-blur-sm group-hover:border-blue-400/40 transition-all duration-300">
-                        {formData.email}
-                      </div>
-                    )}
-                  </motion.div>
-
-                  <motion.div 
-                    whileHover={{ scale: 1.02 }}
-                    className="space-y-2"
-                  >
-                    <label className="text-sm font-medium text-slate-300">Phone</label>
-                    {isEditing ? (
-                      <Input
-                        value={formData.phone}
-                        onChange={(e) => handleInputChange('phone', formatIndianPhoneNumber(e.target.value))}
-                        placeholder="+91 98765 43210"
-                        maxLength={17}
-                        className="bg-slate-800/60 border-slate-600 text-white placeholder-slate-400 focus:border-blue-500 focus:ring-blue-500/20"
-                      />
-                    ) : (
-                      <p className="text-white bg-slate-800/40 p-3 rounded-lg border border-slate-700/30">{formData.phone ? getDisplayPhoneNumber(formData.phone) : 'No phone number'}</p>
-                    )}
-                  </motion.div>
-
-                  <motion.div 
-                    whileHover={{ scale: 1.02 }}
-                    className="space-y-2 relative" 
-                    style={{ zIndex: isEditing ? 50 : 'auto' }}
-                  >
-                    <label className="text-sm font-medium text-slate-300">Date of Birth</label>
-                    {isEditing ? (
-                      <div className="relative">
-                        <DatePicker
-                          value={formData.dateOfBirth}
-                          onChange={(date) => handleInputChange('dateOfBirth', date)}
-                          placeholder="Select your date of birth"
-                          className="w-full bg-slate-800/60 border-slate-600 text-white placeholder-slate-400 focus:border-blue-500 focus:ring-blue-500/20"
-                          maxDate={new Date().toISOString().split('T')[0]}
-                        />
-                      </div>
-                    ) : (
-                      <p className="text-white bg-slate-800/40 p-3 rounded-lg border border-slate-700/30">
-                        {formData.dateOfBirth ? formatToMMDDYYYY(formData.dateOfBirth) : 'Not provided'}
-                      </p>
-                    )}
-                  </motion.div>
-
-                  <motion.div 
-                    whileHover={{ scale: 1.02 }}
-                    className="space-y-2"
-                  >
-                    <label className="text-sm font-medium text-slate-300">Emergency Contact</label>
-                    {isEditing ? (
-                      <Input
-                        value={formData.emergencyContact}
-                        onChange={(e) => handleInputChange('emergencyContact', e.target.value)}
-                        placeholder="Emergency contact number"
-                        className="bg-slate-800/60 border-slate-600 text-white placeholder-slate-400 focus:border-blue-500 focus:ring-blue-500/20"
-                      />
-                    ) : (
-                      <p className="text-white bg-slate-800/40 p-3 rounded-lg border border-slate-700/30">
-                        {formData.emergencyContact || 'Not provided'}
-                      </p>
-                    )}
-                  </motion.div>
-
-                  <motion.div 
-                    whileHover={{ scale: 1.02 }}
-                    className="space-y-2"
-                  >
-                    <label className="text-sm font-medium text-slate-300">Blood Type</label>
-                    {isEditing ? (
-                      <select
-                        value={formData.bloodType}
-                        onChange={(e) => handleInputChange('bloodType', e.target.value)}
-                        className="w-full px-3 py-2 border border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-slate-800/60 text-white"
-                      >
-                        <option value="">Select blood type</option>
-                        <option value="A+">A+</option>
-                        <option value="A-">A-</option>
-                        <option value="B+">B+</option>
-                        <option value="B-">B-</option>
-                        <option value="AB+">AB+</option>
-                        <option value="AB-">AB-</option>
-                        <option value="O+">O+</option>
-                        <option value="O-">O-</option>
-                      </select>
-                    ) : (
-                      <p className="text-white bg-slate-800/40 p-3 rounded-lg border border-slate-700/30">
-                        {formData.bloodType || 'Not provided'}
-                      </p>
-                    )}
-                  </motion.div>
-
-                  <motion.div 
-                    whileHover={{ scale: 1.02 }}
-                    className="space-y-2"
-                  >
-                    <label className="text-sm font-medium text-slate-300">Gender</label>
-                    {isEditing ? (
-                      <select
-                        value={formData.gender}
-                        onChange={(e) => handleInputChange('gender', e.target.value)}
-                        className="w-full px-3 py-2 border border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-slate-800/60 text-white"
-                      >
-                        <option value="">Select gender</option>
-                        <option value="Male">Male</option>
-                        <option value="Female">Female</option>
-                        <option value="Other">Other</option>
-                        <option value="Prefer not to say">Prefer not to say</option>
-                      </select>
-                    ) : (
-                      <p className="text-white bg-slate-800/40 p-3 rounded-lg border border-slate-700/30">
-                        {formData.gender || 'Not provided'}
-                      </p>
-                    )}
-                  </motion.div>
-                </div>
-
-                {/* Add extra spacing when editing to accommodate date picker */}
-                {isEditing && <div className="h-20"></div>}
-              </CardContent>
-            </Card>
-          </motion.div>
+              {/* Add extra spacing when editing to accommodate date picker */}
+              {isEditing && <div className="h-20"></div>}
+            </CardContent>
+          </Card>
         </div>
 
         {/* Add extra spacing when editing */}
         {isEditing && <div className="h-24"></div>}
 
+        <Card variant="elevated" className="mt-8">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Lock className="w-5 h-5" />Password Security
+            </CardTitle>
+            <CardDescription>Manage your account password</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+              <div>
+                <h3 className="font-medium text-foreground">Password</h3>
+                <p className="text-sm text-muted-foreground">Last changed 30 days ago</p>
+              </div>
+              <Button variant="outline">Change Password</Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Additional Profile Sections */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Health Information */}
+          <Card variant="glass">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="w-5 h-5 text-green-600" />
+                Health Information
+              </CardTitle>
+              <CardDescription>Your medical profile summary</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+                  <div className="text-sm text-green-600 font-medium">Blood Type</div>
+                  <div className="text-lg font-bold text-green-800">{formData.bloodType || 'Not Set'}</div>
+                </div>
+                <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                  <div className="text-sm text-blue-600 font-medium">Age</div>
+                  <div className="text-lg font-bold text-blue-800">
+                    {formData.dateOfBirth ? calculateAge(formData.dateOfBirth) || 'N/A' : 'N/A'}
+                  </div>
+                </div>
+              </div>
+              <div className="p-3 bg-orange-50 rounded-lg border border-orange-200">
+                <div className="text-sm text-orange-600 font-medium">Gender</div>
+                <div className="text-sm text-orange-800 mt-1">{formData.gender || 'Not specified'}</div>
+              </div>
+              <div className="p-3 bg-purple-50 rounded-lg border border-purple-200">
+                <div className="text-sm text-purple-600 font-medium">Emergency Contact</div>
+                <div className="text-sm text-purple-800 mt-1">{formData.emergencyContact || 'Not provided'}</div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Account Activity */}
+          <Card variant="glass">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-blue-600" />
+                Account Activity
+              </CardTitle>
+              <CardDescription>Recent account information</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between p-3 bg-slate-800 rounded-lg border border-slate-600">
+                <div>
+                  <div className="font-medium text-white">Last Login</div>
+                  <div className="text-sm text-slate-300">Today at 2:30 PM</div>
+                </div>
+                <Badge variant="success">Active</Badge>
+              </div>
+              <div className="flex items-center justify-between p-3 bg-slate-800 rounded-lg border border-slate-600">
+                <div>
+                  <div className="font-medium text-white">Profile Updated</div>
+                  <div className="text-sm text-slate-300">2 days ago</div>
+                </div>
+                <Badge variant="secondary">Recent</Badge>
+              </div>
+              <div className="flex items-center justify-between p-3 bg-slate-800 rounded-lg border border-slate-600">
+                <div>
+                  <div className="font-medium text-white">Account Created</div>
+                  <div className="text-sm text-slate-300">January 15, 2024</div>
+                </div>
+                <Badge variant="outline">Verified</Badge>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
 
-        {/* Enhanced Contact & Feedback Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.5 }}
-        >
-          <ContactFeedback />
-        </motion.div>
-
-        </motion.div>
-      </div>
+      </motion.div>
     </Layout>
   )
 }

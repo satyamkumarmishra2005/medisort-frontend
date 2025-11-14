@@ -122,7 +122,7 @@ export interface FileUploadData {
   }
 }
 
-const API_BASE_URL = 'http://54.226.134.50:8080'
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://api.medisort.app'
 
 // Create axios instance with default config
 const apiClient = axios.create({

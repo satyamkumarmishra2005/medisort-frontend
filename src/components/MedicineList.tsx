@@ -7,7 +7,8 @@ import { Badge } from './ui/badge'
 import { LoadingSpinner } from './ui/loading'
 import { useToast } from './ui/toast'
 import { RefillModal } from './RefillModal'
-import { Trash2, Edit, Search, Filter, Plus, Package } from 'lucide-react'
+import { CustomReminderModal, CustomReminder } from './CustomReminderModal'
+import { Trash2, Edit, Search, Filter, Plus, Package, AlertTriangle, Clock, Bell } from 'lucide-react'
 
 interface MedicineListProps {
   onEdit: (medicine: Medicine) => void
@@ -22,35 +23,24 @@ export const MedicineList: React.FC<MedicineListProps> = ({ onEdit, onAdd }) => 
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [total, setTotal] = useState(0)
-  const [itemsPerPage, setItemsPerPage] = useState(10)
   const [deleteLoading, setDeleteLoading] = useState<string | null>(null)
   const [refillModal, setRefillModal] = useState<{ isOpen: boolean; medicine: Medicine | null }>({   
     isOpen: false,
     medicine: null
   })
   const [refillLoading, setRefillLoading] = useState(false)
-
+  const [customReminderModal, setCustomReminderModal] = useState<{ 
+    isOpen: boolean; 
+    medicine: Medicine | null 
+  }>({
+    isOpen: false,
+    medicine: null
+  })
+  const [reminderLoading, setReminderLoading] = useState(false)
 
   const { addToast } = useToast()
 
-  // Utility function to detect if an item is actually a custom reminder
-  const isCustomReminder = (medicine: Medicine) => {
-    const name = medicine.name.toLowerCase()
-    return (
-      name.includes('custom reminder') ||
-      name.includes('do exercise') ||
-      name.includes('reminder:') ||
-      name.includes('take vitamins') ||
-      name.includes('morning exercise') ||
-      name.includes('check blood pressure') ||
-      !medicine.dosage ||
-      !medicine.category ||
-      typeof medicine.totalQuantity !== 'number' ||
-      typeof medicine.dosesPerDay !== 'number'
-    )
-  }
-
-
+  const itemsPerPage = 10
 
   const categories = [
     'All Categories',
@@ -67,34 +57,26 @@ export const MedicineList: React.FC<MedicineListProps> = ({ onEdit, onAdd }) => 
   const loadMedicines = useCallback(async () => {
     try {
       setLoading(true)
-      let allMedicines: Medicine[] = []
+      let medicines: Medicine[] = []
 
       if (searchTerm) {
-        allMedicines = await medicineApi.searchMedicines(searchTerm)
+        medicines = await medicineApi.searchMedicines(searchTerm)
       } else if (selectedCategory && selectedCategory !== 'All Categories') {
-        allMedicines = await medicineApi.getMedicinesByCategory(selectedCategory)
+        medicines = await medicineApi.getMedicinesByCategory(selectedCategory)
       } else {
-        allMedicines = await medicineApi.getMedicines()
+        medicines = await medicineApi.getMedicines()
       }
 
-      // Filter out any custom reminders that might have gotten mixed in
-      const validMedicines = allMedicines.filter(medicine => !isCustomReminder(medicine))
-
-      // Calculate pagination
-      const startIndex = (currentPage - 1) * itemsPerPage
-      const endIndex = startIndex + itemsPerPage
-      const paginatedMedicines = validMedicines.slice(startIndex, endIndex)
-
-      setMedicines(paginatedMedicines)
-      setTotal(validMedicines.length)
-      setTotalPages(Math.ceil(validMedicines.length / itemsPerPage))
+      setMedicines(medicines)
+      setTotal(medicines.length)
+      setTotalPages(Math.ceil(medicines.length / itemsPerPage))
     } catch (error) {
       addToast({ title: 'Failed to load medicines', type: 'error' })
       console.error('Error loading medicines:', error)
     } finally {
       setLoading(false)
     }
-  }, [searchTerm, selectedCategory, currentPage, itemsPerPage, addToast])
+  }, [searchTerm, selectedCategory, addToast])
 
   useEffect(() => {
     loadMedicines()
@@ -128,11 +110,6 @@ export const MedicineList: React.FC<MedicineListProps> = ({ onEdit, onAdd }) => 
     setCurrentPage(1)
   }
 
-  const handlePageSizeChange = (newSize: number) => {
-    setItemsPerPage(newSize)
-    setCurrentPage(1)
-  }
-
   const isExpiringSoon = (medicine: Medicine) => {
     const startDate = new Date(medicine.startDate)
     const endDate = new Date(startDate.getTime() + medicine.durationDays * 24 * 60 * 60 * 1000)
@@ -158,7 +135,10 @@ export const MedicineList: React.FC<MedicineListProps> = ({ onEdit, onAdd }) => 
     return endDate < today
   }
 
-
+  const getEndDate = (medicine: Medicine) => {
+    const startDate = new Date(medicine.startDate)
+    return new Date(startDate.getTime() + medicine.durationDays * 24 * 60 * 60 * 1000)
+  }
 
   const getExpectedEndDate = (medicine: Medicine) => {
     if (medicine.expectedEndDate) {
@@ -225,7 +205,45 @@ export const MedicineList: React.FC<MedicineListProps> = ({ onEdit, onAdd }) => 
     }
   }
 
+  const handleCustomReminder = (medicine: Medicine) => {
+    setCustomReminderModal({ isOpen: true, medicine })
+  }
 
+  const handleCustomReminderSubmit = async (reminders: CustomReminder[]) => {
+    if (!customReminderModal.medicine?.id) return
+
+    try {
+      setReminderLoading(true)
+      
+      // Add custom reminder times to the medicine
+      for (const reminder of reminders) {
+        if (reminder.isActive) {
+          await medicineApi.addRefillReminder(
+            customReminderModal.medicine.id,
+            new Date().toISOString().split('T')[0], // today
+            [reminder.time],
+            0 // custom reminder, not related to end date
+          )
+        }
+      }
+      
+      addToast({
+        title: 'Custom Reminder Added',
+        description: `Custom reminder times added for ${customReminderModal.medicine.name}`,
+        type: 'success'
+      })
+      
+      setCustomReminderModal({ isOpen: false, medicine: null })
+    } catch (error) {
+      addToast({
+        title: 'Failed to Add Reminder',
+        description: 'Unable to add custom reminder. Please try again.',
+        type: 'error'
+      })
+    } finally {
+      setReminderLoading(false)
+    }
+  }
 
   if (loading) {
     return (
@@ -261,32 +279,17 @@ export const MedicineList: React.FC<MedicineListProps> = ({ onEdit, onAdd }) => 
               className="pl-10"
             />
           </div>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <Filter className="w-4 h-4 text-muted-foreground" />
-              <select
-                value={selectedCategory}
-                onChange={(e) => handleCategoryFilter(e.target.value)}
-                className="px-3 py-2 border border-border rounded-md bg-background text-foreground"
-              >
-                {categories.map(category => (
-                  <option key={category} value={category}>{category}</option>
-                ))}
-              </select>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">Show:</span>
-              <select
-                value={itemsPerPage}
-                onChange={(e) => handlePageSizeChange(Number(e.target.value))}
-                className="px-3 py-2 border border-border rounded-md bg-background text-foreground"
-              >
-                <option value={5}>5 per page</option>
-                <option value={10}>10 per page</option>
-                <option value={20}>20 per page</option>
-                <option value={50}>50 per page</option>
-              </select>
-            </div>
+          <div className="flex items-center gap-2">
+            <Filter className="w-4 h-4 text-muted-foreground" />
+            <select
+              value={selectedCategory}
+              onChange={(e) => handleCategoryFilter(e.target.value)}
+              className="px-3 py-2 border border-border rounded-md bg-background text-foreground"
+            >
+              {categories.map(category => (
+                <option key={category} value={category}>{category}</option>
+              ))}
+            </select>
           </div>
         </div>
       </Card>
@@ -418,7 +421,16 @@ export const MedicineList: React.FC<MedicineListProps> = ({ onEdit, onAdd }) => 
                     </Button>
                   )}
 
-
+                  {/* Custom Reminder Button */}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleCustomReminder(medicine)}
+                    className="flex items-center gap-1 text-green-600 hover:text-green-700"
+                  >
+                    <Bell className="w-4 h-4" />
+                    Reminder
+                  </Button>
 
                   {/* Edit Button */}
                   <Button
@@ -451,148 +463,27 @@ export const MedicineList: React.FC<MedicineListProps> = ({ onEdit, onAdd }) => 
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <Card className="p-4 bg-gradient-to-r from-slate-50 to-blue-50 dark:from-slate-800 dark:to-blue-900/20">
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-            <div className="flex items-center gap-4">
-              <div className="text-sm text-muted-foreground font-medium">
-                Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, total)} of {total} medicines
-              </div>
-              {totalPages > 10 && (
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">Go to page:</span>
-                  <Input
-                    type="number"
-                    min={1}
-                    max={totalPages}
-                    value={currentPage}
-                    onChange={(e) => {
-                      const page = parseInt(e.target.value)
-                      if (page >= 1 && page <= totalPages) {
-                        setCurrentPage(page)
-                      }
-                    }}
-                    className="w-16 h-8 text-center"
-                  />
-                </div>
-              )}
-            </div>
-            
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage(1)}
-                disabled={currentPage === 1}
-                className="hidden sm:flex"
-              >
-                First
-              </Button>
-              
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                disabled={currentPage === 1}
-              >
-                Previous
-              </Button>
+        <div className="flex justify-center items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+            disabled={currentPage === 1}
+          >
+            Previous
+          </Button>
 
-              {/* Page Numbers */}
-              <div className="flex items-center gap-1">
-                {totalPages <= 7 ? (
-                  // Show all pages if 7 or fewer
-                  Array.from({ length: totalPages }, (_, i) => (
-                    <Button
-                      key={i + 1}
-                      variant={currentPage === i + 1 ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setCurrentPage(i + 1)}
-                      className="w-8 h-8 p-0"
-                    >
-                      {i + 1}
-                    </Button>
-                  ))
-                ) : (
-                  // Show smart pagination for more than 7 pages
-                  <>
-                    {currentPage > 3 && (
-                      <>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setCurrentPage(1)}
-                          className="w-8 h-8 p-0"
-                        >
-                          1
-                        </Button>
-                        {currentPage > 4 && <span className="px-2">...</span>}
-                      </>
-                    )}
-                    
-                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                      let pageNum: number
-                      if (currentPage <= 3) {
-                        pageNum = i + 1
-                      } else if (currentPage >= totalPages - 2) {
-                        pageNum = totalPages - 4 + i
-                      } else {
-                        pageNum = currentPage - 2 + i
-                      }
-                      
-                      if (pageNum >= 1 && pageNum <= totalPages) {
-                        return (
-                          <Button
-                            key={pageNum}
-                            variant={currentPage === pageNum ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => setCurrentPage(pageNum)}
-                            className="w-8 h-8 p-0"
-                          >
-                            {pageNum}
-                          </Button>
-                        )
-                      }
-                      return null
-                    })}
-                    
-                    {currentPage < totalPages - 2 && (
-                      <>
-                        {currentPage < totalPages - 3 && <span className="px-2">...</span>}
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setCurrentPage(totalPages)}
-                          className="w-8 h-8 p-0"
-                        >
-                          {totalPages}
-                        </Button>
-                      </>
-                    )}
-                  </>
-                )}
-              </div>
+          <span className="px-4 py-2 text-sm text-muted-foreground">
+            Page {currentPage} of {totalPages}
+          </span>
 
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                disabled={currentPage === totalPages}
-              >
-                Next
-              </Button>
-              
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage(totalPages)}
-                disabled={currentPage === totalPages}
-                className="hidden sm:flex"
-              >
-                Last
-              </Button>
-            </div>
-          </div>
-        </Card>
+          <Button
+            variant="outline"
+            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+            disabled={currentPage === totalPages}
+          >
+            Next
+          </Button>
+        </div>
       )}
 
       {/* Refill Modal */}
@@ -606,7 +497,16 @@ export const MedicineList: React.FC<MedicineListProps> = ({ onEdit, onAdd }) => 
         />
       )}
 
-
+      {/* Custom Reminder Modal */}
+      {customReminderModal.medicine && (
+        <CustomReminderModal
+          isOpen={customReminderModal.isOpen}
+          onClose={() => setCustomReminderModal({ isOpen: false, medicine: null })}
+          medicine={customReminderModal.medicine}
+          onAddReminder={handleCustomReminderSubmit}
+          isLoading={reminderLoading}
+        />
+      )}
     </div>
   )
 }

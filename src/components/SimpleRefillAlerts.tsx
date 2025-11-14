@@ -4,12 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Button } from './ui/button'
 import { Badge } from './ui/badge'
 import { simpleRefillService, SimpleRefillAlert } from '../services/simpleRefillService'
-import { medicineApi } from '../services/medicineApi'
 
 export const SimpleRefillAlerts: React.FC = () => {
   const [refillAlerts, setRefillAlerts] = useState<SimpleRefillAlert[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [totalMedicines, setTotalMedicines] = useState(0)
 
   useEffect(() => {
     loadRefillAlerts()
@@ -27,29 +25,14 @@ export const SimpleRefillAlerts: React.FC = () => {
       loadRefillAlerts()
     }
 
-    const handleMedicineAdded = () => {
-      console.log('🎉 SimpleRefillAlerts: Received medicine-added event!')
-      console.log('💊 Medicine added, refreshing simple refill alerts')
-      loadRefillAlerts()
-    }
-
-    const handleMedicineUpdated = () => {
-      console.log('💊 Medicine updated, refreshing simple refill alerts')
-      loadRefillAlerts()
-    }
-
     window.addEventListener('refill-confirmed', handleRefillConfirmed)
     window.addEventListener('refill-alert-dismissed', handleRefillAlertDismissed)
     window.addEventListener('refill-alerts-updated', handleRefillAlertsUpdated)
-    window.addEventListener('medicine-added', handleMedicineAdded)
-    window.addEventListener('medicine-updated', handleMedicineUpdated)
 
     return () => {
       window.removeEventListener('refill-confirmed', handleRefillConfirmed)
       window.removeEventListener('refill-alert-dismissed', handleRefillAlertDismissed)
       window.removeEventListener('refill-alerts-updated', handleRefillAlertsUpdated)
-      window.removeEventListener('medicine-added', handleMedicineAdded)
-      window.removeEventListener('medicine-updated', handleMedicineUpdated)
     }
   }, [])
 
@@ -59,16 +42,6 @@ export const SimpleRefillAlerts: React.FC = () => {
       await simpleRefillService.checkAllMedicinesForRefill()
       const alerts = simpleRefillService.getActiveRefillAlerts()
       setRefillAlerts(alerts)
-      
-      // Get total medicines count
-      try {
-        const medicines = await medicineApi.getMedicines()
-        console.log('🔍 SimpleRefillAlerts: Loaded medicines count:', medicines.length)
-        setTotalMedicines(medicines.length)
-      } catch (error) {
-        console.error('Error loading medicines count:', error)
-        setTotalMedicines(0)
-      }
     } catch (error) {
       console.error('Error loading refill alerts:', error)
     } finally {
@@ -142,16 +115,10 @@ export const SimpleRefillAlerts: React.FC = () => {
           <div className="text-center py-8">
             <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-4" />
             <h3 className="text-lg font-medium mb-2">
-              {(() => {
-                console.log('🔍 SimpleRefillAlerts: totalMedicines =', totalMedicines)
-                return totalMedicines === 0 ? "No Medicines Added Yet" : "All Medicines Well Stocked"
-              })()}
+              All Medicines Well Stocked
             </h3>
             <p className="text-gray-600">
-              {totalMedicines === 0 
-                ? "Add your first medicine to start tracking refill alerts"
-                : "No medicines need refilling at this time"
-              }
+              No medicines need refilling at this time
             </p>
           </div>
         ) : (

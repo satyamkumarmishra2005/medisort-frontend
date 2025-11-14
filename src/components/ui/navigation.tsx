@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
+import { ThemeToggle } from './theme-toggle'
 import { Button } from './button'
 import { Badge } from './badge'
 import { LogOut, User, Settings, Bell } from 'lucide-react'
 import { cn } from '../../lib/utils'
-import { refillNotificationService } from '../../services/refillNotificationService'
+import { mockNotifications } from '../../data/mockData'
 
 interface NavigationProps {
   className?: string
@@ -13,109 +14,68 @@ interface NavigationProps {
 
 export const Navigation: React.FC<NavigationProps> = ({ className }) => {
   const { user, logout } = useAuth()
-  const [refillAlertCount, setRefillAlertCount] = useState(0)
-
-  useEffect(() => {
-    const updateRefillAlertCount = () => {
-      const activeAlerts = refillNotificationService.getActiveRefillAlerts()
-      setRefillAlertCount(activeAlerts.length)
-    }
-
-    // Initial load
-    updateRefillAlertCount()
-
-    // Initialize the refill service if not already done
-    refillNotificationService.initialize().catch(console.error)
-
-    // Listen for refill alert updates
-    const handleRefillAlertsUpdated = () => {
-      updateRefillAlertCount()
-    }
-
-    const handleRefillAlertDismissed = () => {
-      updateRefillAlertCount()
-    }
-
-    const handleRefillConfirmed = () => {
-      updateRefillAlertCount()
-    }
-
-    window.addEventListener('refill-alerts-updated', handleRefillAlertsUpdated)
-    window.addEventListener('refill-alert-dismissed', handleRefillAlertDismissed)
-    window.addEventListener('refill-confirmed', handleRefillConfirmed)
-
-    return () => {
-      window.removeEventListener('refill-alerts-updated', handleRefillAlertsUpdated)
-      window.removeEventListener('refill-alert-dismissed', handleRefillAlertDismissed)
-      window.removeEventListener('refill-confirmed', handleRefillConfirmed)
-    }
-  }, [])
+  const unreadNotifications = mockNotifications.filter(n => !n.isRead).length
 
   return (
     <nav className={cn(
-      "flex items-center justify-between px-6 py-4 bg-gradient-to-r from-slate-900/95 via-slate-800/95 to-slate-900/95 backdrop-blur-md border-b border-slate-700/50 shadow-lg",
+      "flex items-center justify-between p-4 bg-background/80 backdrop-blur-md border-b border-border",
       className
     )}>
       <div className="flex items-center space-x-4">
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-            <span className="text-white font-bold text-lg">M</span>
+        <div className="flex items-center space-x-2">
+          <div className="w-8 h-8 healthcare-gradient rounded-lg flex items-center justify-center">
+            <span className="text-white font-bold text-sm">M</span>
           </div>
-          <span className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-            MediSort
-          </span>
+          <span className="text-xl font-bold text-foreground">MediSort</span>
         </div>
       </div>
 
-      <div className="flex items-center space-x-3">
+      <div className="flex items-center space-x-4">
+        <ThemeToggle />
+        
         {user && (
           <>
-            {/* Enhanced Notifications */}
+            {/* Notifications */}
             <Link to="/notifications">
               <Button
                 variant="ghost"
                 size="sm"
-                className="relative text-slate-300 hover:text-white hover:bg-slate-700/50 transition-all duration-200 p-3 rounded-xl"
+                className="relative text-muted-foreground hover:text-foreground"
               >
-                <Bell className="h-5 w-5" />
-                {refillAlertCount > 0 && (
-                  <Badge
-                    variant="destructive"
-                    className="absolute -top-1 -right-1 w-6 h-6 text-xs p-0 flex items-center justify-center bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg animate-pulse"
+                <Bell className="h-4 w-4" />
+                {unreadNotifications > 0 && (
+                  <Badge 
+                    variant="destructive" 
+                    className="absolute -top-1 -right-1 w-5 h-5 text-xs p-0 flex items-center justify-center"
                   >
-                    {refillAlertCount}
+                    {unreadNotifications}
                   </Badge>
                 )}
               </Button>
             </Link>
-
-            {/* Enhanced User Info */}
-            <div className="flex items-center space-x-3 px-4 py-2 bg-black/50 rounded-xl border border-gray-700/50 backdrop-blur-sm">
-              <div className="p-1 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg">
-                <User className="h-4 w-4 text-white" />
-              </div>
-              <span className="text-sm text-slate-200 font-medium">{user.email}</span>
+            
+            <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+              <User className="h-4 w-4" />
+              <span>{user.email}</span>
             </div>
-
-            {/* Enhanced Profile Button */}
+            
             <Link to="/profile">
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-slate-300 hover:text-white hover:bg-slate-700/50 transition-all duration-200 p-3 rounded-xl"
+                className="text-muted-foreground hover:text-foreground"
               >
-                <Settings className="h-5 w-5" />
+                <Settings className="h-4 w-4" />
               </Button>
             </Link>
-
-            {/* Enhanced Logout Button */}
+            
             <Button
               variant="ghost"
               size="sm"
               onClick={logout}
-              className="text-slate-300 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 p-3 rounded-xl"
+              className="text-muted-foreground hover:text-destructive"
             >
-              <LogOut className="h-5 w-5" />
+              <LogOut className="h-4 w-4" />
             </Button>
           </>
         )}

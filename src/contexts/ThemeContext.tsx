@@ -23,8 +23,20 @@ interface ThemeProviderProps {
 }
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
-  // Force dark theme only
-  const [theme] = useState<Theme>('dark')
+  const [theme, setThemeState] = useState<Theme>(() => {
+    // Check localStorage first, then system preference
+    const savedTheme = localStorage.getItem('theme') as Theme
+    if (savedTheme) {
+      return savedTheme
+    }
+    
+    // Check system preference
+    if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      return 'dark'
+    }
+    
+    return 'light'
+  })
 
   useEffect(() => {
     const root = window.document.documentElement
@@ -32,20 +44,19 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     // Remove previous theme classes
     root.classList.remove('light', 'dark')
     
-    // Always add dark theme class
-    root.classList.add('dark')
+    // Add current theme class
+    root.classList.add(theme)
     
-    // Save dark theme to localStorage
-    localStorage.setItem('theme', 'dark')
-  }, [])
+    // Save to localStorage
+    localStorage.setItem('theme', theme)
+  }, [theme])
 
-  // No-op functions since we're dark-only now
   const toggleTheme = () => {
-    // Do nothing - dark mode only
+    setThemeState(prevTheme => prevTheme === 'light' ? 'dark' : 'light')
   }
 
   const setTheme = (newTheme: Theme) => {
-    // Do nothing - dark mode only
+    setThemeState(newTheme)
   }
 
   const value = {

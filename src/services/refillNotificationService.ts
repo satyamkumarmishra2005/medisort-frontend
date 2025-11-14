@@ -79,9 +79,6 @@ class RefillNotificationService {
     try {
       console.log('🔍 Checking all medicines for refill needs')
       
-      // Clean up any invalid data first
-      this.cleanupInvalidAlerts()
-      
       let medicines: any[] = []
       
       // Use frontend-based filtering to avoid backend date calculation issues
@@ -114,20 +111,12 @@ class RefillNotificationService {
       this.saveRefillAlerts()
       console.log(`💾 Saved ${this.refillAlerts.size} refill alerts`)
       
-      // Dispatch event to update UI components
-      window.dispatchEvent(new CustomEvent('refill-alerts-updated', {
-        detail: { alertCount: this.refillAlerts.size }
-      }))
-      
     } catch (error) {
       console.error('❌ Error checking medicines for refill:', error)
       
       // If everything fails, try to work with cached data
       console.log('🔄 Attempting to work with cached refill alerts...')
       this.loadRefillAlerts()
-      
-      // Clean up any invalid cached data
-      this.cleanupInvalidAlerts()
       
       if (this.refillAlerts.size > 0) {
         console.log(`📋 Using ${this.refillAlerts.size} cached refill alerts`)
@@ -307,7 +296,23 @@ class RefillNotificationService {
     
     const message = this.getRefillNotificationMessage(alert)
     
-    // Send in-app notification only (no browser notifications)
+    // Send browser notification
+    if (Notification.permission === 'granted') {
+      const notification = new Notification('💊 Medicine Refill Reminder', {
+        body: message,
+        icon: '/favicon.ico',
+        tag: `refill-${alert.medicineId}`,
+        requireInteraction: alert.alertLevel === 'critical'
+      })
+      
+      notification.onclick = () => {
+        window.focus()
+        this.handleRefillNotificationClick(alert.medicineId)
+        notification.close()
+      }
+    }
+    
+    // Send in-app notification
     window.dispatchEvent(new CustomEvent('refill-notification', {
       detail: {
         type: 'refill',
@@ -434,21 +439,10 @@ class RefillNotificationService {
     
     const activeAlerts = allAlerts.filter(alert => {
       const isDismissedToday = alert.dismissedDate === today
+      console.log(`   - ${alert.medicineName}: dismissed=${alert.dismissedDate}, isDismissedToday=${isDismissedToday}`)
       
-      // Additional validation: ensure this is actually a medicine refill alert
-      const isValidRefillAlert = (
-        alert.medicineId && 
-        alert.medicineName && 
-        typeof alert.daysRemaining === 'number' &&
-        alert.currentStock !== undefined &&
-        alert.alertLevel &&
-        !alert.medicineName.toLowerCase().includes('custom reminder')
-      )
-      
-      console.log(`   - ${alert.medicineName}: dismissed=${alert.dismissedDate}, isDismissedToday=${isDismissedToday}, isValid=${isValidRefillAlert}`)
-      
-      // Show alert if it's not dismissed today AND it's a valid refill alert
-      return !isDismissedToday && isValidRefillAlert
+      // Show alert if it's not dismissed today
+      return !isDismissedToday
     })
     
     console.log('   - Active alerts after filtering:', activeAlerts.length)
@@ -506,87 +500,17 @@ class RefillNotificationService {
         const alertsData = JSON.parse(saved)
         
         alertsData.forEach(([id, alert]: [number, any]) => {
-          // Validate that this is actually a refill alert before loading
-          const isValidRefillAlert = (
-            alert.medicineId && 
-            alert.medicineName && 
-            typeof alert.daysRemaining === 'number' &&
-            alert.currentStock !== undefined &&
-            alert.alertLevel &&
-            !alert.medicineName.toLowerCase().includes('custom reminder') &&
-            !alert.medicineName.toLowerCase().includes('do exercise') &&
-            !alert.medicineName.toLowerCase().includes('reminder:')
-          )
-          
-          if (isValidRefillAlert) {
-            this.refillAlerts.set(id, {
-              ...alert,
-              expectedEndDate: new Date(alert.expectedEndDate),
-              lastNotificationSent: alert.lastNotificationSent ? new Date(alert.lastNotificationSent) : null,
-              dismissedDate: alert.dismissedDate || undefined
-            })
-          } else {
-            console.log(`🗑️ Skipping invalid refill alert during load: ${alert.medicineName}`)
-          }
+          this.refillAlerts.set(id, {
+            ...alert,
+            expectedEndDate: new Date(alert.expectedEndDate),
+            lastNotificationSent: alert.lastNotificationSent ? new Date(alert.lastNotificationSent) : null,
+            dismissedDate: alert.dismissedDate || undefined
+          })
         })
       }
     } catch (error) {
       console.error('Error loading refill alerts:', error)
-      // Clear corrupted data
-      localStorage.removeItem('refill_alerts')
     }
-  }
-
-  // Clean up invalid alerts (e.g., custom reminders that got mixed in)
-  cleanupInvalidAlerts(): void {
-    const invalidKeys: number[] = []
-    
-    this.refillAlerts.forEach((alert, key) => {
-      // Check if this looks like a custom reminder or invalid data
-      const isInvalid = (
-        !alert.medicineId ||
-        !alert.medicineName ||
-        typeof alert.daysRemaining !== 'number' ||
-        alert.currentStock === undefined ||
-        !alert.alertLevel ||
-        alert.medicineName.toLowerCase().includes('custom reminder') ||
-        alert.medicineName.toLowerCase().includes('do exercise') ||
-        alert.medicineName.toLowerCase().includes('reminder:')
-      )
-      
-      if (isInvalid) {
-        console.log(`🗑️ Removing invalid refill alert: ${alert.medicineName}`)
-        invalidKeys.push(key)
-      }
-    })
-    
-    // Remove invalid alerts
-    invalidKeys.forEach(key => {
-      this.refillAlerts.delete(key)
-    })
-    
-    if (invalidKeys.length > 0) {
-      console.log(`✅ Cleaned up ${invalidKeys.length} invalid refill alerts`)
-      this.saveRefillAlerts()
-      
-      // Dispatch event to update UI components
-      window.dispatchEvent(new CustomEvent('refill-alerts-updated', {
-        detail: { alertCount: this.refillAlerts.size }
-      }))
-    }
-  }
-
-  // Clear all refill alert data (for debugging/reset purposes)
-  clearAllRefillData(): void {
-    console.log('🗑️ Clearing all refill alert data')
-    this.refillAlerts.clear()
-    localStorage.removeItem('refill_alerts')
-    console.log('✅ All refill alert data cleared')
-    
-    // Dispatch event to update UI components
-    window.dispatchEvent(new CustomEvent('refill-alerts-updated', {
-      detail: { alertCount: 0 }
-    }))
   }
 
   // Cleanup method

@@ -28,29 +28,13 @@ class CustomReminderNotificationService {
     console.log('🔔 Starting Custom Reminder Notification Service')
     this.isRunning = true
 
-    // Check every 15 seconds for more precise timing
+    // Check every 30 seconds for precise timing
     this.checkInterval = setInterval(() => {
       this.checkForDueReminders()
-    }, 15000)
+    }, 30000)
 
     // Initial check
     this.checkForDueReminders()
-    
-    // Also check at the start of every minute for exact timing
-    const now = new Date()
-    const secondsUntilNextMinute = 60 - now.getSeconds()
-    
-    setTimeout(() => {
-      this.checkForDueReminders()
-      
-      // Then check every minute on the minute
-      const minuteInterval = setInterval(() => {
-        this.checkForDueReminders()
-      }, 60000)
-      
-      // Store the minute interval for cleanup
-      ;(this as any).minuteInterval = minuteInterval
-    }, secondsUntilNextMinute * 1000)
   }
 
   // Stop the notification service
@@ -59,35 +43,8 @@ class CustomReminderNotificationService {
       clearInterval(this.checkInterval)
       this.checkInterval = null
     }
-    
-    // Also clear the minute interval if it exists
-    if ((this as any).minuteInterval) {
-      clearInterval((this as any).minuteInterval)
-      ;(this as any).minuteInterval = null
-    }
-    
     this.isRunning = false
     console.log('🔔 Stopped Custom Reminder Notification Service')
-  }
-
-  // Helper function to check if times match (with tolerance)
-  private isTimeMatch(reminderTime: string, currentTime: string): boolean {
-    // Exact match
-    if (reminderTime === currentTime) {
-      return true
-    }
-    
-    // Parse times
-    const [reminderHour, reminderMinute] = reminderTime.split(':').map(Number)
-    const [currentHour, currentMinute] = currentTime.split(':').map(Number)
-    
-    // Convert to minutes since midnight for easier comparison
-    const reminderMinutes = reminderHour * 60 + reminderMinute
-    const currentMinutes = currentHour * 60 + currentMinute
-    
-    // Allow 1 minute tolerance (in case we missed the exact minute)
-    const timeDifference = Math.abs(currentMinutes - reminderMinutes)
-    return timeDifference <= 1
   }
 
   // Check for reminders that are due now
@@ -114,15 +71,15 @@ class CustomReminderNotificationService {
         const reminderTime = reminder.time
         const isActive = reminder.isActive
 
-        // Check if time matches (exact match or within 1 minute for reliability)
-        const timeMatch = this.isTimeMatch(reminderTime, currentTime)
+        // Check if time matches (exact match)
+        const timeMatch = reminderTime === currentTime
 
         // Create unique key for this reminder on this day and time
-        const reminderKey = `${reminder.id}_${today}_${reminderTime}` // Use reminder time, not current time
+        const reminderKey = `${reminder.id}_${today}_${currentTime}`
         const alreadyNotified = this.lastNotifiedReminders.has(reminderKey)
 
         // Also check localStorage for additional duplicate prevention
-        const storageKey = `custom_reminder_notified_${reminder.id}_${today}_${reminderTime}`
+        const storageKey = `custom_reminder_notified_${reminder.id}_${today}_${currentTime}`
         const alreadyNotifiedInStorage = localStorage.getItem(storageKey)
 
         console.log(`⏰ Checking reminder "${reminder.title}":`)
@@ -145,13 +102,11 @@ class CustomReminderNotificationService {
           await this.showReminderNotification(reminder)
 
           // Mark as notified to prevent duplicates (both in memory and storage)
-          const reminderKey = `${reminder.id}_${today}_${reminder.time}` // Use reminder time
+          const reminderKey = `${reminder.id}_${today}_${currentTime}`
           this.lastNotifiedReminders.add(reminderKey)
 
-          const storageKey = `custom_reminder_notified_${reminder.id}_${today}_${reminder.time}`
+          const storageKey = `custom_reminder_notified_${reminder.id}_${today}_${currentTime}`
           localStorage.setItem(storageKey, 'true')
-          
-          console.log(`✅ Marked reminder ${reminder.id} as notified for ${reminder.time}`)
         }
 
         // Clean up old notification flags
@@ -178,9 +133,6 @@ class CustomReminderNotificationService {
       reminder
     }
 
-    // Clear any existing browser notifications first
-    this.clearBrowserNotifications()
-
     // Only show in-app notification (browser notifications disabled)
     this.showInAppNotification(notification)
 
@@ -188,25 +140,84 @@ class CustomReminderNotificationService {
     this.playNotificationSound()
   }
 
-  // Clear any existing browser notifications
-  private clearBrowserNotifications(): void {
-    try {
-      // Clear any existing browser notifications
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.ready.then(registration => {
-          registration.getNotifications().then(notifications => {
-            notifications.forEach(notification => {
-              notification.close()
-            })
-          })
-        })
+  // Show browser notification
+  private async showBrowserNotification(notification: CustomReminderNotification): Promise<void> {
+    // Check if browser notifications are supported and permitted
+    if (!('Notification' in window)) {
+      console.warn('Browser does not support notifications')
+      return
+    }
+
+    // Request permission if not already granted
+    if (Notification.permission === 'default') {
+      const permission = await Notification.requestPermission()
+      if (permission !== 'granted') {
+        console.warn('Notification permission denied')
+        return
       }
+    }
+
+    if (Notification.permission !== 'granted') {
+      console.warn('Notification permission not granted')
+      return
+    }
+
+    try {
+      const categoryEmojis: { [key: string]: string } = {
+        'health': '🏥',
+        'medication': '💊',
+        'exercise': '🏃‍♂️',
+        'nutrition': '🥗',
+        'appointment': '📅',
+        'personal': '🧘‍♀️',
+        'other': '📝'
+      }
+
+      const categoryEmoji = categoryEmojis[notification.category] || '📝'
+      const title = `${categoryEmoji} ${notification.title}`
+      const body = this.getNotificationBody(notification)
+
+      const browserNotification = new Notification(title, {
+        body,
+        icon: '/favicon.ico',
+        badge: '/favicon.ico',
+        tag: `custom-reminder-${notification.id}`,
+        requireInteraction: true, // Keep visible until user interacts
+        silent: false,
+        data: {
+          reminderId: notification.id,
+          type: 'custom_reminder',
+          time: notification.time,
+          origin: 'MediSort'
+        }
+      })
+
+      // Handle notification click
+      browserNotification.onclick = () => {
+        console.log(`🖱️ Custom reminder notification clicked: ${notification.title}`)
+
+        // Focus the window
+        window.focus()
+
+        // Navigate to custom reminders page
+        if (window.location.pathname !== '/custom-reminders') {
+          window.location.href = '/custom-reminders'
+        }
+
+        // Close the notification
+        browserNotification.close()
+      }
+
+      // Auto-close after 30 seconds
+      setTimeout(() => {
+        browserNotification.close()
+      }, 30000)
+
+      console.log(`✅ Browser notification shown for custom reminder: ${notification.title}`)
     } catch (error) {
-      console.log('Could not clear browser notifications:', error)
+      console.error('❌ Error showing browser notification:', error)
     }
   }
-
-
 
   // Show in-app notification
   private showInAppNotification(notification: CustomReminderNotification): void {
@@ -323,7 +334,33 @@ class CustomReminderNotificationService {
     }
   }
 
+  // Request notification permission
+  async requestPermission(): Promise<boolean> {
+    if (!('Notification' in window)) {
+      console.warn('Browser does not support notifications')
+      return false
+    }
 
+    if (Notification.permission === 'granted') {
+      return true
+    }
+
+    if (Notification.permission === 'denied') {
+      console.warn('Notification permission denied')
+      return false
+    }
+
+    try {
+      const permission = await Notification.requestPermission()
+      const granted = permission === 'granted'
+
+      console.log(`🔔 Custom reminder notification permission ${granted ? 'granted' : 'denied'}`)
+      return granted
+    } catch (error) {
+      console.error('Error requesting notification permission:', error)
+      return false
+    }
+  }
 
   // Get service status
   getStatus(): { isRunning: boolean; activeReminders: number } {
@@ -339,55 +376,6 @@ class CustomReminderNotificationService {
     await this.checkForDueReminders()
   }
 
-  // Debug method to check specific reminder
-  async debugReminder(reminderId: number): Promise<void> {
-    try {
-      const now = new Date()
-      const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`
-      const today = now.toDateString()
-      
-      console.log(`🔍 Debugging reminder ${reminderId}:`)
-      console.log(`   - Current time: ${currentTime}`)
-      console.log(`   - Today: ${today}`)
-      
-      const todaysReminders = await customReminderService.getTodaysReminders()
-      const reminder = todaysReminders.find(r => r.id === reminderId)
-      
-      if (!reminder) {
-        console.log(`   - ❌ Reminder ${reminderId} not found in today's reminders`)
-        return
-      }
-      
-      console.log(`   - Reminder found: "${reminder.title}"`)
-      console.log(`   - Scheduled time: ${reminder.time}`)
-      console.log(`   - Is active: ${reminder.isActive}`)
-      console.log(`   - Time match: ${this.isTimeMatch(reminder.time, currentTime)}`)
-      
-      const reminderKey = `${reminder.id}_${today}_${reminder.time}`
-      const alreadyNotified = this.lastNotifiedReminders.has(reminderKey)
-      const storageKey = `custom_reminder_notified_${reminder.id}_${today}_${reminder.time}`
-      const alreadyNotifiedInStorage = localStorage.getItem(storageKey)
-      
-      console.log(`   - Already notified (memory): ${alreadyNotified}`)
-      console.log(`   - Already notified (storage): ${!!alreadyNotifiedInStorage}`)
-      
-      const shouldNotify = this.isTimeMatch(reminder.time, currentTime) && 
-                          reminder.isActive && 
-                          !alreadyNotified && 
-                          !alreadyNotifiedInStorage
-      
-      console.log(`   - Should notify: ${shouldNotify}`)
-      
-      if (shouldNotify) {
-        console.log(`   - 🔔 Triggering notification for debugging...`)
-        await this.showReminderNotification(reminder)
-      }
-      
-    } catch (error) {
-      console.error(`❌ Error debugging reminder ${reminderId}:`, error)
-    }
-  }
-
   // Clear notification history
   clearNotificationHistory(): void {
     this.lastNotifiedReminders.clear()
@@ -399,33 +387,7 @@ class CustomReminderNotificationService {
       }
     })
 
-    // Clear any browser notifications
-    this.clearBrowserNotifications()
-
     console.log('🗑️ Cleared custom reminder notification history (memory and storage)')
-  }
-
-  // Force clear all notifications and reset service
-  forceReset(): void {
-    console.log('🔄 Force resetting custom reminder notification service...')
-    
-    // Stop the service
-    this.stop()
-    
-    // Clear all notification history
-    this.clearNotificationHistory()
-    
-    // Clear browser notifications
-    this.clearBrowserNotifications()
-    
-    // Clear any cached reminder data
-    Object.keys(localStorage).forEach(key => {
-      if (key.includes('reminder') || key.includes('notification')) {
-        localStorage.removeItem(key)
-      }
-    })
-    
-    console.log('✅ Custom reminder notification service reset complete')
   }
 }
 

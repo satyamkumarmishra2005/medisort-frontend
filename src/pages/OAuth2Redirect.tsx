@@ -54,7 +54,7 @@ const OAuth2Redirect: React.FC = () => {
         // Fetch user data from backend using the token
         const fetchUserData = async () => {
           try {
-            // const response = await fetch('http://localhost:8081/api/user/profile', {
+            // const response = await fetch('https://api.medisort.app/api/user/profile', {
             //   method: 'GET',
             //   headers: {
             //     'Authorization': `Bearer ${token}`,
@@ -62,15 +62,15 @@ const OAuth2Redirect: React.FC = () => {
             //   }
             // })
 
-
-            // REPLACE WITH this session-based profile fetch:
-            const response = await fetch('http://54.226.134.50:8080/api/user/profile-session', {
-              method: 'GET',
-              credentials: 'include',
-              headers: {
-                'Content-Type': 'application/json'
-              }
-            })
+            
+// REPLACE WITH this session-based profile fetch:
+const response = await fetch('https://api.medisort.app/api/user/profile-session', {
+  method: 'GET',
+  credentials: 'include',
+  headers: {
+    'Content-Type': 'application/json'
+  }
+})
 
             if (response.ok) {
               const profileData = await response.json()
@@ -81,7 +81,7 @@ const OAuth2Redirect: React.FC = () => {
               if (profileData && profileData.email && !profileData.error) {
                 console.log('✅ Successfully got user data from backend database')
                 console.log('Backend profile data:', profileData)
-
+                
                 const userData = {
                   id: Date.now().toString(),
                   email: profileData.email,
@@ -101,7 +101,7 @@ const OAuth2Redirect: React.FC = () => {
               } else {
                 console.log('❌ Backend returned error or empty data:', profileData)
                 console.log('Response status was OK but data is invalid')
-
+                
                 // Try to decode JWT to get the real data
                 const payload = decodeJWT(token)
                 console.log('JWT payload for fallback:', payload)
@@ -132,7 +132,7 @@ const OAuth2Redirect: React.FC = () => {
                     role: 'patient' as const,
                     provider: 'google'
                   }
-
+                  
                   localStorage.setItem('medisort_user', JSON.stringify(userData))
                   if (setUser) {
                     setUser(userData)
@@ -172,7 +172,7 @@ const OAuth2Redirect: React.FC = () => {
                   role: 'patient' as const,
                   provider: 'google'
                 }
-
+                
                 localStorage.setItem('medisort_user', JSON.stringify(userData))
                 if (setUser) {
                   setUser(userData)
@@ -210,7 +210,7 @@ const OAuth2Redirect: React.FC = () => {
                 role: 'patient' as const,
                 provider: 'google'
               }
-
+              
               localStorage.setItem('medisort_user', JSON.stringify(userData))
               if (setUser) {
                 setUser(userData)
@@ -220,12 +220,77 @@ const OAuth2Redirect: React.FC = () => {
         }
 
         // Call the async function and wait for it to complete
-        fetchUserData().then(() => {
-          console.log('✅ OAuth2 authentication successful, redirecting to dashboard...')
+        fetchUserData().then(async () => {
+          console.log('🔍 OAuth2 authentication successful, checking if phone number is needed...')
+          console.log('🔍 Current token:', token ? token.substring(0, 20) + '...' : 'No token')
+          console.log('🔍 Current user data in localStorage:', localStorage.getItem('medisort_user'))
+          console.log('🔍 About to start phone check process...')
 
-          // Redirect directly to dashboard - no onboarding process
-          console.log('� Rbedirecting to /dashboard')
-          window.location.href = '/dashboard'
+          try {
+            // Check if user needs to provide phone number
+            console.log('🔍 Importing ApiService...')
+            const { ApiService } = await import('../services/api')
+            console.log('🔍 ApiService imported successfully')
+            
+            console.log('🔍 Making API call to check phone requirement...')
+            console.log('🔍 API Base URL: https://api.medisort.app')
+            console.log('🔍 Current token for API call:', token ? 'Token available' : 'No token')
+            
+            // Check phone requirement
+            const phoneResponse = await fetch('https://api.medisort.app/api/user/needs-phone-session', {
+              method: 'GET',
+              credentials: 'include',
+              headers: {
+                'Content-Type': 'application/json'
+              }
+            });
+
+            const phoneCheckResult = phoneResponse.ok ? 
+              { success: true, needsPhone: (await phoneResponse.json()).needsPhone } :
+              { success: false, message: 'Failed to check phone status' };
+            
+            console.log('📱 Phone check result:', phoneCheckResult)
+            console.log('📱 Success:', phoneCheckResult.success)
+            console.log('📱 Needs phone:', phoneCheckResult.needsPhone)
+            console.log('📱 Message:', phoneCheckResult.message)
+            
+            // Additional debugging
+            console.log('📱 Full response object:', JSON.stringify(phoneCheckResult, null, 2))
+            console.log('📱 Type of needsPhone:', typeof phoneCheckResult.needsPhone)
+            console.log('📱 Strict equality check (needsPhone === true):', phoneCheckResult.needsPhone === true)
+
+            if (phoneCheckResult.success && phoneCheckResult.needsPhone === true) {
+              console.log('✅ User needs to provide phone number, redirecting to phone collection...')
+              
+              // Redirect to phone number collection immediately without success toast
+              console.log('🔄 Redirecting to /phone-number-collection')
+              navigate('/phone-number-collection', { replace: true })
+            } else if (phoneCheckResult.success && phoneCheckResult.needsPhone === false) {
+              console.log('✅ Phone number already provided, redirecting to dashboard...')
+              
+              // Redirect to dashboard immediately without success toast
+              console.log('🔄 Redirecting to /dashboard')
+              window.location.href = '/dashboard'
+            } else {
+              console.log('❌ Phone check failed, proceeding to dashboard anyway...')
+              console.log('❌ Failure reason:', phoneCheckResult.message)
+              
+              // Redirect to dashboard immediately without warning toast
+              console.log('🔄 Redirecting to /dashboard (fallback)')
+              window.location.href = '/dashboard'
+            }
+          } catch (phoneCheckError) {
+            console.error('❌ Error checking phone number requirement:', phoneCheckError)
+            console.error('❌ Error details:', {
+              name: phoneCheckError instanceof Error ? phoneCheckError.name : 'Unknown',
+              message: phoneCheckError instanceof Error ? phoneCheckError.message : 'Unknown error',
+              stack: phoneCheckError instanceof Error ? phoneCheckError.stack : 'No stack trace'
+            })
+            
+            // If phone check fails, proceed to dashboard anyway
+            console.log('🔄 Redirecting to /dashboard (error fallback)')
+            window.location.href = '/dashboard'
+          }
         })
 
       } catch (error) {
@@ -249,123 +314,71 @@ const OAuth2Redirect: React.FC = () => {
   }, [searchParams, navigate, addToast, setUser, setToken])
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Animated background elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-500/20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-500/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl animate-pulse delay-500"></div>
-      </div>
-
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center p-4">
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
-        className="relative z-10 text-center max-w-md w-full"
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5 }}
+        className="text-center"
       >
-        {/* Logo with enhanced styling */}
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ delay: 0.2, duration: 0.5, type: "spring", stiffness: 200 }}
-          className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-teal-400 to-blue-500 rounded-full mb-8 shadow-2xl shadow-teal-500/25"
-        >
-          <Heart className="w-10 h-10 text-white" />
-        </motion.div>
+        {/* Logo */}
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-healthcare-gradient rounded-full mb-6">
+          <Heart className="w-8 h-8 text-white" />
+        </div>
 
-        {/* Main content card */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3, duration: 0.5 }}
-          className="bg-white/10 backdrop-blur-xl rounded-2xl p-8 border border-white/20 shadow-2xl"
-        >
-          <h1 className="text-3xl font-bold text-white mb-2">Welcome to MediSort</h1>
-          <p className="text-white/70 mb-8">Completing your authentication...</p>
+        <h1 className="text-2xl font-bold text-foreground mb-4">Processing Authentication</h1>
 
-          {searchParams.get('error') ? (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.4, duration: 0.3 }}
-              className="space-y-6"
+        {searchParams.get('error') ? (
+          <div className="space-y-4">
+            <div className="flex items-center justify-center gap-2 text-destructive">
+              <XCircle className="w-5 h-5" />
+              <p>Authentication failed. Redirecting...</p>
+            </div>
+            <button
+              onClick={() => navigate('/login', { replace: true })}
+              className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
             >
-              <div className="flex items-center justify-center gap-3 text-red-400 bg-red-500/10 rounded-xl p-4 border border-red-500/20">
-                <XCircle className="w-6 h-6" />
-                <p className="font-medium">Authentication failed</p>
-              </div>
-              <p className="text-white/60 text-sm">Don't worry, let's try again</p>
-              <button
-                onClick={() => navigate('/login', { replace: true })}
-                className="w-full px-6 py-3 bg-gradient-to-r from-teal-500 to-blue-500 text-white font-semibold rounded-xl hover:from-teal-600 hover:to-blue-600 transition-all duration-200 transform hover:scale-105 shadow-lg"
-              >
-                Return to Login
-              </button>
-            </motion.div>
-          ) : searchParams.get('token') ? (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.4, duration: 0.3 }}
-              className="space-y-6"
+              Go to Login
+            </button>
+          </div>
+        ) : searchParams.get('token') ? (
+          <div className="space-y-4">
+            <div className="flex items-center justify-center gap-2 text-accent">
+              <CheckCircle className="w-5 h-5" />
+              <p>Authentication successful. Redirecting...</p>
+            </div>
+            <button
+              onClick={() => {
+                console.log('Manual redirect to dashboard...')
+                window.location.href = '/dashboard'
+              }}
+              className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
             >
-              <div className="flex items-center justify-center gap-3 text-green-400 bg-green-500/10 rounded-xl p-4 border border-green-500/20">
-                <CheckCircle className="w-6 h-6" />
-                <p className="font-medium">Authentication successful!</p>
-              </div>
-              <p className="text-white/60 text-sm">Taking you to your dashboard...</p>
-
-              {/* Loading animation */}
-              <div className="flex justify-center">
-                <div className="flex space-x-1">
-                  <div className="w-2 h-2 bg-teal-400 rounded-full animate-bounce"></div>
-                  <div className="w-2 h-2 bg-teal-400 rounded-full animate-bounce delay-100"></div>
-                  <div className="w-2 h-2 bg-teal-400 rounded-full animate-bounce delay-200"></div>
-                </div>
-              </div>
-
-              <button
-                onClick={() => {
-                  console.log('Manual redirect to dashboard...')
-                  window.location.href = '/dashboard'
-                }}
-                className="w-full px-6 py-3 bg-gradient-to-r from-teal-500 to-blue-500 text-white font-semibold rounded-xl hover:from-teal-600 hover:to-blue-600 transition-all duration-200 transform hover:scale-105 shadow-lg"
-              >
-                Continue to Dashboard
-              </button>
-            </motion.div>
-          ) : (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.4, duration: 0.3 }}
-              className="space-y-6"
+              Go to Dashboard
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <div className="flex items-center justify-center gap-2 text-muted-foreground">
+              <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+              <p>Processing...</p>
+            </div>
+            <button
+              onClick={() => navigate('/login', { replace: true })}
+              className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
             >
-              <div className="flex items-center justify-center gap-3 text-white/80">
-                <div className="w-6 h-6 border-2 border-teal-400 border-t-transparent rounded-full animate-spin"></div>
-                <p className="font-medium">Processing your request...</p>
-              </div>
-              <p className="text-white/60 text-sm">This will only take a moment</p>
+              Go to Login
+            </button>
+          </div>
+        )}
 
-              <button
-                onClick={() => navigate('/login', { replace: true })}
-                className="w-full px-6 py-3 bg-white/10 text-white font-semibold rounded-xl hover:bg-white/20 transition-all duration-200 border border-white/20"
-              >
-                Return to Login
-              </button>
-            </motion.div>
-          )}
-        </motion.div>
-
-        {/* Subtle branding */}
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.8, duration: 0.5 }}
-          className="text-white/40 text-sm mt-6"
-        >
-          Your healthcare management companion
-        </motion.p>
+        {/* Debug info */}
+        <div className="mt-8 p-4 bg-muted/20 rounded-md text-xs text-muted-foreground">
+          <p><strong>Debug Info:</strong></p>
+          <p>Token: {searchParams.get('token') ? 'Present' : 'Missing'}</p>
+          <p>Error: {searchParams.get('error') || 'None'}</p>
+          <p>URL: {window.location.href}</p>
+        </div>
       </motion.div>
     </div>
   )

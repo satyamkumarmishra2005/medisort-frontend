@@ -16,7 +16,7 @@ interface AuthContextType {
   isAuthenticated: boolean
   isLoading: boolean
   login: (email: string, password: string) => Promise<{ success: boolean; message?: string }>
-  register: (name: string, email: string, password: string, phone: string, emergencyContact?: string, dateOfBirth?: string, bloodType?: string, gender?: string) => Promise<{ success: boolean; message?: string }>
+  register: (name: string, email: string, password: string, phone: string) => Promise<{ success: boolean; message?: string }>
   logout: () => void
   forgotPassword: (email: string) => Promise<boolean>
   validateResetToken: (token: string) => Promise<{ success: boolean; message?: string }>
@@ -35,7 +35,7 @@ interface AuthContextType {
 }
 
 // API Configuration
-const API_BASE_URL = 'http://54.226.134.50:8080'
+const API_BASE_URL = 'https://api.medisort.app'
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
@@ -208,11 +208,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     } catch (error) {
       console.error('Login error:', error)
-      let errorMessage = 'Network error. Please check your connection and ensure the backend server is running on port 8080.'
+      let errorMessage = 'Network error. Please check your connection and ensure the backend server is running on port 8081.'
 
       // Check if it's a network error
       if (error instanceof TypeError && error.message.includes('fetch')) {
-        errorMessage = 'Cannot connect to server. Please ensure your Spring Boot backend is running on http://54.226.134.50:8080'
+        errorMessage = 'Cannot connect to server. Please ensure your Spring Boot backend is running on https://api.medisort.app'
       }
 
       return { success: false, message: errorMessage }
@@ -221,24 +221,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }
 
-  const register = async (name: string, email: string, password: string, phone: string, emergencyContact?: string, dateOfBirth?: string, bloodType?: string, gender?: string): Promise<{ success: boolean; message?: string }> => {
+  const register = async (name: string, email: string, password: string, phone: string): Promise<{ success: boolean; message?: string }> => {
     try {
       setIsLoading(true)
-
-      const requestBody: any = { name, email, password, phone }
-      
-      // Add optional fields if provided
-      if (emergencyContact) requestBody.emergencyContact = emergencyContact
-      if (dateOfBirth) requestBody.dateOfBirth = dateOfBirth
-      if (bloodType) requestBody.bloodType = bloodType
-      if (gender) requestBody.gender = gender
 
       const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(requestBody),
+        body: JSON.stringify({ name, email, password, phone }),
       })
 
       if (response.ok) {
@@ -268,11 +260,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     } catch (error) {
       console.error('Registration error:', error)
-      let errorMessage = 'Network error. Please check your connection and ensure the backend server is running on port 8080.'
+      let errorMessage = 'Network error. Please check your connection and ensure the backend server is running on port 8081.'
 
       // Check if it's a network error
       if (error instanceof TypeError && error.message.includes('fetch')) {
-        errorMessage = 'Cannot connect to server. Please ensure your Spring Boot backend is running on http://54.226.134.50:8080'
+        errorMessage = 'Cannot connect to server. Please ensure your Spring Boot backend is running on https://api.medisort.app'
       }
 
       return { success: false, message: errorMessage }
@@ -484,11 +476,33 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }
 
   const checkNeedsPhone = async (): Promise<{ success: boolean; needsPhone?: boolean; message?: string }> => {
-    // Always return that phone is not needed - no onboarding process
-    return {
-      success: true,
-      needsPhone: false,
-      message: 'Phone requirement disabled - no onboarding process'
+    try {
+      // CHANGE THIS LINE - Add "-session" to the endpoint
+      const response = await fetch(`${API_BASE_URL}/api/user/needs-phone-session`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        return {
+          success: true,
+          needsPhone: data.needsPhone,
+          message: 'Phone requirement check successful'
+        }
+      } else {
+        const errorText = await response.text()
+        return {
+          success: false,
+          message: response.status === 401 ? 'Unauthorized - Session expired' : errorText
+        }
+      }
+    } catch (error) {
+      console.error('Check needs phone error:', error)
+      return { success: false, message: 'Network error while checking phone requirement' }
     }
   }
 

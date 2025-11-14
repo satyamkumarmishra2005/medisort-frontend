@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Navigation } from './navigation'
 import { Sidebar } from './sidebar'
-
+import { RefillNotificationHandler } from '../RefillNotificationHandler'
 import { cn } from '../../lib/utils'
 
 interface LayoutProps {
@@ -21,7 +21,7 @@ export const Layout: React.FC<LayoutProps> = ({
 
   if (!showSidebar) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black">
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
         {showNavigation && <Navigation />}
         <main className={cn("container mx-auto px-4 py-8", className)}>
           {children}
@@ -31,7 +31,7 @@ export const Layout: React.FC<LayoutProps> = ({
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black flex">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex">
       {/* Sidebar */}
       <div className="flex-shrink-0">
         <Sidebar 
@@ -43,10 +43,13 @@ export const Layout: React.FC<LayoutProps> = ({
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
         {showNavigation && <Navigation />}
-        <main className={cn("flex-1", className)}>
+        <main className={cn("flex-1 p-6", className)}>
           {children}
         </main>
       </div>
+
+      {/* Refill Notification Handler */}
+      <RefillNotificationHandler />
     </div>
   )
 }

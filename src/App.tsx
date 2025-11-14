@@ -11,7 +11,7 @@ import Register from './pages/Register'
 import ForgotPassword from './pages/ForgotPassword'
 import ResetPassword from './pages/ResetPassword'
 import OAuth2Redirect from './pages/OAuth2Redirect'
-
+import PhoneNumberCollection from './pages/PhoneNumberCollection'
 
 import Dashboard from './pages/Dashboard'
 import Reports from './pages/Reports'
@@ -118,7 +118,14 @@ const AppRoutes: React.FC = () => {
         path="/oauth2/redirect"
         element={<OAuth2Redirect />}
       />
-
+      <Route
+        path="/phone-number-collection"
+        element={
+          <ProtectedRoute>
+            <PhoneNumberCollection />
+          </ProtectedRoute>
+        }
+      />
 
       <Route
         path="/dashboard"

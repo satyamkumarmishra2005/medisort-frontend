@@ -5,7 +5,7 @@ import { Eye, EyeOff, Lock, Mail, Heart } from 'lucide-react'
 import { Button } from '../components/ui/button'
 import { Input } from '../components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card'
-
+import { ThemeToggle } from '../components/ui/theme-toggle'
 import { useToast } from '../components/ui/toast'
 import { useAuth } from '../contexts/AuthContext'
 import GoogleLoginButton from '../components/GoogleLoginButton'
@@ -102,7 +102,10 @@ const Login: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center p-4 relative overflow-hidden">
       <AnimatedBackground variant="healthcare" />
       
-
+      {/* Theme Toggle */}
+      <div className="absolute top-4 right-4 z-10">
+        <ThemeToggle />
+      </div>
       
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -250,7 +253,7 @@ const Login: React.FC = () => {
                 </Button>
               </motion.div>
 
-
+              <Divider text="or continue with" variant="elegant" />
 
               {/* Google Login */}
               <GoogleLoginButton disabled={isSubmitting} />
@@ -268,7 +271,11 @@ const Login: React.FC = () => {
               </div>
 
               {/* Backend info */}
-
+              <div className="mt-6 p-3 bg-muted/50 border border-border rounded-md">
+                <p className="text-xs text-muted-foreground text-center">
+                  <strong>Backend:</strong> Make sure your Spring Boot server is running on port 8081
+                </p>
+              </div>
             </form>
           </CardContent>
         </Card>

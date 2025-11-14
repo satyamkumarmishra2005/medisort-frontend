@@ -5,6 +5,7 @@ import { Eye, EyeOff, Lock, Heart, ArrowLeft, CheckCircle } from 'lucide-react'
 import { Button } from '../components/ui/button'
 import { Input } from '../components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card'
+import { ThemeToggle } from '../components/ui/theme-toggle'
 import { useToast } from '../components/ui/toast'
 import { useAuth } from '../contexts/AuthContext'
 
@@ -106,9 +107,9 @@ const ResetPassword: React.FC = () => {
         setIsSuccess(true)
         addToast({
           type: 'success',
-          title: 'Password Updated Successfully!',
-          description: 'Your password has been updated. You can now sign in with your new password.',
-          duration: 6000
+          title: 'Password Reset Successful',
+          description: 'Your password has been reset successfully.',
+          duration: 5000
         })
       } else {
         setErrors({ general: result.message || 'Failed to reset password. Please try again.' })
@@ -137,6 +138,10 @@ const ResetPassword: React.FC = () => {
   if (isValidatingToken) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center p-4">
+        <div className="absolute top-4 right-4">
+          <ThemeToggle />
+        </div>
+        
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -161,6 +166,10 @@ const ResetPassword: React.FC = () => {
   if (isSuccess) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center p-4">
+        <div className="absolute top-4 right-4">
+          <ThemeToggle />
+        </div>
+        
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -192,10 +201,10 @@ const ResetPassword: React.FC = () => {
                   <CheckCircle className="w-8 h-8 text-accent" />
                 </div>
                 <h2 className="text-2xl font-semibold text-foreground mb-2">
-                  Password Updated Successfully! 🎉
+                  Password Reset Complete
                 </h2>
                 <p className="text-muted-foreground mb-6">
-                  Great! Your password has been updated successfully. You can now sign in to your MediSort account with your new password.
+                  Your password has been successfully reset. You can now sign in with your new password.
                 </p>
                 <Link to="/login">
                   <Button variant="healthcare-gradient" className="w-full">
@@ -214,6 +223,10 @@ const ResetPassword: React.FC = () => {
   if (!tokenValid) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center p-4">
+        <div className="absolute top-4 right-4">
+          <ThemeToggle />
+        </div>
+        
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -247,6 +260,10 @@ const ResetPassword: React.FC = () => {
   // Main reset password form
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20 flex items-center justify-center p-4">
+      <div className="absolute top-4 right-4">
+        <ThemeToggle />
+      </div>
+      
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
