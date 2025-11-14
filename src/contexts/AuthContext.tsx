@@ -90,7 +90,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
         setUser(user)
         setToken(authToken)
-        
+
         // Clear any stale reminder cache on app initialization with existing auth
         localStorage.removeItem('custom_reminders_cache')
         console.log('🗑️ Cleared stale reminder cache on app initialization')
@@ -144,7 +144,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           // Clear any stale reminder cache before storing new token
           localStorage.removeItem('custom_reminders_cache')
           console.log('🗑️ Cleared stale reminder cache on fresh login')
-          
+
           // Store the token first
           localStorage.setItem('medisort_token', jwtToken)
           setToken(jwtToken)
@@ -277,20 +277,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // Clear authentication data
     localStorage.removeItem('medisort_user')
     localStorage.removeItem('medisort_token')
-    
+
     // Clear all reminder caches to prevent deleted reminders from reappearing
     localStorage.removeItem('custom_reminders_cache')
     localStorage.removeItem('medicine_reminder_statuses')
-    
+
     // Clear all completed reminder caches (they have date-based keys)
     Object.keys(localStorage).forEach(key => {
       if (key.startsWith('completed_reminders_')) {
         localStorage.removeItem(key)
       }
     })
-    
+
     console.log('🗑️ Cleared all authentication and reminder caches on logout')
-    
+
     setUser(null)
     setToken(null)
   }

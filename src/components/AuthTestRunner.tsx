@@ -27,7 +27,7 @@ export const AuthTestRunner: React.FC = () => {
         message,
         timestamp: new Date().toLocaleTimeString()
       }
-      
+
       if (existing) {
         return prev.map(t => t.name === name ? newTest : t)
       } else {
@@ -43,7 +43,7 @@ export const AuthTestRunner: React.FC = () => {
     // Test 1: Check authentication status
     updateTest('Auth Status', 'running', 'Checking authentication status...')
     await new Promise(resolve => setTimeout(resolve, 500))
-    
+
     if (isAuthenticated && token && user) {
       updateTest('Auth Status', 'success', `Authenticated as ${user.email}`)
     } else {
@@ -53,7 +53,7 @@ export const AuthTestRunner: React.FC = () => {
     // Test 2: Check token format
     updateTest('Token Format', 'running', 'Validating token format...')
     await new Promise(resolve => setTimeout(resolve, 500))
-    
+
     if (token) {
       const parts = token.split('.')
       if (parts.length === 3) {
@@ -78,13 +78,13 @@ export const AuthTestRunner: React.FC = () => {
     // Test 3: Check token expiration
     updateTest('Token Expiration', 'running', 'Checking token expiration...')
     await new Promise(resolve => setTimeout(resolve, 500))
-    
+
     if (token) {
       try {
         const payload = JSON.parse(atob(token.split('.')[1]))
         const currentTime = Math.floor(Date.now() / 1000)
         const timeRemaining = payload.exp - currentTime
-        
+
         if (timeRemaining > 0) {
           const minutes = Math.floor(timeRemaining / 60)
           updateTest('Token Expiration', 'success', `Token valid for ${minutes} more minutes`)
@@ -101,7 +101,7 @@ export const AuthTestRunner: React.FC = () => {
     // Test 4: Test API call
     updateTest('API Call Test', 'running', 'Testing medicine API call...')
     await new Promise(resolve => setTimeout(resolve, 500))
-    
+
     try {
       const medicines = await medicineApi.getMedicines()
       updateTest('API Call Test', 'success', `Successfully fetched ${medicines.length} medicines`)
@@ -114,7 +114,7 @@ export const AuthTestRunner: React.FC = () => {
     if (isAuthenticated && token) {
       updateTest('Reminder Test', 'running', 'Testing reminder creation...')
       await new Promise(resolve => setTimeout(resolve, 500))
-      
+
       try {
         // This will likely fail if no medicines exist, but tests the auth flow
         await medicineApi.addReminderToMedicine(1, {
@@ -172,8 +172,8 @@ export const AuthTestRunner: React.FC = () => {
             Run comprehensive tests to diagnose authentication issues
           </p>
         </div>
-        <Button 
-          onClick={runAuthTests} 
+        <Button
+          onClick={runAuthTests}
           disabled={isRunning}
           className="flex items-center gap-2"
         >

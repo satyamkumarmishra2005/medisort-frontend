@@ -39,14 +39,40 @@ export const useNotifications = () => {
       }
 
       initNotifications()
-    }
-    
-    // Cleanup on unmount or logout
-    return () => {
-      if (!isAuthenticated) {
-        backendNotificationPoller.stopPolling()
-        customReminderNotificationService.stop()
+    } else if (!isAuthenticated && isInitialized) {
+      // User logged out - stop all services immediately
+      console.log('🔐 User logged out - stopping all notification services...')
+      
+      try {
+        notificationService.destroy()
+        console.log('✅ Stopped notification service')
+      } catch (error) {
+        console.error('❌ Error stopping notification service:', error)
       }
+      
+      try {
+        backendNotificationPoller.stopPolling()
+        console.log('✅ Stopped backend notification poller')
+      } catch (error) {
+        console.error('❌ Error stopping backend poller:', error)
+      }
+      
+      try {
+        customReminderNotificationService.stop()
+        console.log('✅ Stopped custom reminder notification service')
+      } catch (error) {
+        console.error('❌ Error stopping custom reminder service:', error)
+      }
+      
+      try {
+        refillNotificationService.destroy()
+        console.log('✅ Stopped refill notification service')
+      } catch (error) {
+        console.error('❌ Error stopping refill service:', error)
+      }
+      
+      setIsInitialized(false)
+      console.log('🔐 All notification services stopped due to logout')
     }
   }, [isAuthenticated, isInitialized])
 
