@@ -35,7 +35,7 @@ interface AuthContextType {
 }
 
 // API Configuration
-const API_BASE_URL = 'https://api.medisort.app'
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://api.medisort.app'
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
@@ -230,7 +230,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ name, email, password, phone }),
+        body: JSON.stringify({ 
+          name, 
+          email, 
+          password, 
+          phone: phone.startsWith('+91') ? phone : `+91${phone.replace(/\D/g, '')}`, // Ensure +91 format
+          role: 'PATIENT',
+          dateOfBirth: '01-01-1990', // Default date, can be updated later
+          emergencyContact: phone.startsWith('+91') ? phone : `+91${phone.replace(/\D/g, '')}`, // Use same phone as emergency contact initially
+          bloodType: 'Unknown',
+          gender: 'Not specified'
+        }),
       })
 
       if (response.ok) {

@@ -5,6 +5,8 @@ import { Badge } from '../components/ui/badge'
 import { SimpleRefillAlerts } from '../components/SimpleRefillAlerts'
 import { SimpleNotificationPermission } from '../components/SimpleNotificationPermission'
 import { SimpleNotificationTester } from '../components/SimpleNotificationTester'
+import { BackendConnectivityTester } from '../components/BackendConnectivityTester'
+import { CORSTestComponent } from '../components/CORSTestComponent'
 import { simpleRefillService } from '../services/simpleRefillService'
 
 const SimpleRemindersAndNotifications: React.FC = () => {
@@ -106,6 +108,12 @@ const SimpleRemindersAndNotifications: React.FC = () => {
 
       {/* Notification Testing */}
       <SimpleNotificationTester />
+
+      {/* Backend Connectivity Testing */}
+      <BackendConnectivityTester />
+
+      {/* CORS Testing */}
+      <CORSTestComponent />
 
       {/* How Refill Alerts Work */}
       <Card>

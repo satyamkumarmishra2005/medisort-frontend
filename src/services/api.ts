@@ -1,5 +1,5 @@
 // API service for making authenticated requests
-const API_BASE_URL = 'https://api.medisort.app'
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://api.medisort.app'
 
 // Interface for user profile data
 interface UserProfileData {
