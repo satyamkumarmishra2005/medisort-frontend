@@ -208,7 +208,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     } catch (error) {
       console.error('Login error:', error)
-      let errorMessage = 'Network error. Please check your connection and ensure the backend server is running on port 8081.'
+      let errorMessage = 'Network error. Please check your connection and try again.'
 
       // Check if it's a network error
       if (error instanceof TypeError && error.message.includes('fetch')) {
@@ -260,7 +260,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     } catch (error) {
       console.error('Registration error:', error)
-      let errorMessage = 'Network error. Please check your connection and ensure the backend server is running on port 8081.'
+      let errorMessage = 'Network error. Please check your connection and try again.'
 
       // Check if it's a network error
       if (error instanceof TypeError && error.message.includes('fetch')) {

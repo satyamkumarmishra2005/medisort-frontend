@@ -271,11 +271,7 @@ const Login: React.FC = () => {
               </div>
 
               {/* Backend info */}
-              <div className="mt-6 p-3 bg-muted/50 border border-border rounded-md">
-                <p className="text-xs text-muted-foreground text-center">
-                  <strong>Backend:</strong> Make sure your Spring Boot server is running on port 8081
-                </p>
-              </div>
+
             </form>
           </CardContent>
         </Card>
